@@ -17,7 +17,7 @@
 mono_crash.*
 
 BlogVb.Api/wwwroot/css/output.css
-BlogVb.Api/package-loc.json
+BlogVb.Api/package-lock.json
 
 # Build results
 [Dd]ebug/
