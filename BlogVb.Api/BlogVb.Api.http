@@ -1,0 +1,19 @@
+@HtmxWithHandlebars_HostAddress = http://localhost:5194
+
+GET {{HtmxWithHandlebars_HostAddress}}/weatherforecast/
+Accept: application/json
+###
+
+GET {{HtmxWithHandlebars_HostAddress}}/weatherforecast/
+Accept: text/html
+###
+
+GET {{HtmxWithHandlebars_HostAddress}}/components/nav/
+Accept: text/html
+###
+
+GET {{HtmxWithHandlebars_HostAddress}}/components/blogs/
+Accept: text/html
+###
+
+

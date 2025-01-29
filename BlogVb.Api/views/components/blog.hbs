@@ -1,0 +1,17 @@
+﻿
+<div class="card w-full bg-base-100 shadow-xl hover:shadow-2xl transition-all">
+    <figure>
+        <img src="https://picsum.photos/600/400" alt="Blog Image" class="h-48 w-full object-cover" />
+    </figure>
+    <div class="card-body">
+        <h2 class="card-title text-xl font-bold">{{blog.name}}</h2>
+        <p class="text-gray-500">{{blog.description}}</p>
+        <div class="flex justify-between items-center text-sm text-gray-400 mt-4">
+            <span>John Doe</span>
+            <span>Jan 28, 2025</span>
+        </div>
+        <div class="card-actions justify-end">
+            <a class="btn btn-primary" href="/{{blog.url}}">Read More</a>
+        </div>
+    </div>
+</div>

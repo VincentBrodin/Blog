@@ -1,0 +1,16 @@
+﻿<table class="table">
+    <tr class="bg-base-200">
+        <th>Date</th>
+        <th>Temperature °C</th>
+        <th>Temperature °F</th>
+        <th>Summary</th>
+    </tr>
+    {{#each forecasts}}
+    {{>forecast forecast=.}}
+    {{/each}}
+</table>
+
+
+<div class="mockup-code">
+  <pre data-prefix="$"><code>npm i daisyui</code></pre>
+</div>

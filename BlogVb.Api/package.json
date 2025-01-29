@@ -1,0 +1,19 @@
+{
+  "name": "blogvb.api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "css:build": "npx tailwindcss -i ./wwwroot/css/input.css -o ./wwwroot/css/output.css --minify"
+  },
+  "keywords": [],
+  "author": "Vincent Brodin",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@tailwindcss/typography": "^0.5.16",
+    "daisyui": "^4.12.23",
+    "eslint": "^9.19.0",
+    "tailwindcss": "^3.4.17"
+  },
+  "type": "module"
+}
