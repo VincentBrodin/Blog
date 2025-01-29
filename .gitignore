@@ -403,8 +403,8 @@ bower_components
 build/Release
 
 # Dependency directories
-HtmxWithHandlebars/node_modules/
-HtmxWithHandlebars/jspm_packages/
+BlogVb.Api/node_modules/
+BlogVb.Api/jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
