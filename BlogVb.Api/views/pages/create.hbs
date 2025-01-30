@@ -1,9 +1,9 @@
-﻿<div class="container flex flex-col grow mx-auto p-8">
+﻿<form method="post" action="/admin/create" class="container flex flex-col grow mx-auto p-8">
     <!-- Meta -->
     <div class="flex flex-row items-start gap-4 mb-4">
         <div class="flex flex-col w-full">
-            <label for="title" class="font-semibold mb-2">Title:</label>
-            <input type="text" id="title" name="title" placeholder="Enter Title" class="input input-bordered w-full">
+            <label for="name" class="font-semibold mb-2">Title:</label>
+            <input type="text" id="name" name="name" placeholder="Enter Title" class="input input-bordered w-full">
         </div>
         <div class="flex flex-col w-full">
             <label for="tags" class="font-semibold mb-2">Tags:</label>
@@ -12,7 +12,7 @@
         </div>
         <div class="flex flex-col justify-center h-full">
             <label for="tags" class="font-semibold mb-2 opacity-0">Center</label>
-            <button type="button" class="btn btn-primary">Upload</button>
+            <button type="submit" class="btn btn-primary">Upload</button>
         </div>
     </div>
 
@@ -25,15 +25,15 @@
     <p id="read-time" class="text-lg font-bold text-primary mb-6">Current read time: 10m 24s</p>
     <div class="flex flex-wrap gap-4 grow">
         <div class="flex flex-col w-full md:w-auto flex-1 min-w-full">
-            <label for="input" class="font-semibold mb-1">Input:</label>
-            <textarea id="input"
+            <label for="content" class="font-semibold mb-1">Input:</label>
+            <textarea id="content"
                       hx-target="#output"
                       hx-swap="innerHTML"
                       hx-trigger="changed, keyup delay:500ms"
                       hx-post="/components/mdtohtml"
                       data-autoresize
                       placeholder="Content"
-                      name="input"
+                      name="content"
                       class="textarea textarea-bordered w-full grow"
                       rows="2"
                       style="box-sizing: border-box; resize: none;"></textarea>
@@ -48,12 +48,12 @@
             </div>
         </div>
     </div>
-</div>
+</form>
 
 <script>
     document.addEventListener("DOMContentLoaded", () => {
         console.log("Test")
-        const input = document.getElementById("input");
+        const input = document.getElementById("content");
         const read_time = document.getElementById("read-time");
 
         input.addEventListener("input", () => {

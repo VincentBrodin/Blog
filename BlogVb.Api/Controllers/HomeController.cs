@@ -2,6 +2,7 @@
 using BlogVb.Api.Services;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
+using System.Formats.Asn1;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -9,15 +10,15 @@ namespace BlogVb.Api.Controllers;
 public class HomeController : ControllerBase {
 	[HttpGet]
 	[Route("")]
-	public IActionResult Get(ILayoutRenderer layoutRenderer, IBlogCache blogCache) {
-		Blog[] blogs = blogCache.GetAllBlogs();
-		return Content(layoutRenderer.Render("pages/home", new { loggedIn = true }, new { blogs }), Accepts.Html);
+	public async Task<IActionResult> GetAsync(ILayoutRenderer layoutRenderer, IBlogCache blogCache) {
+		BlogForRendering[] blogs = blogCache.GetAllBlogsForRendering();
+		return Content(await layoutRenderer.RenderAsync("pages/home", new { loggedIn = true }, new { blogs }), Accepts.Html);
 	}
 
 	[HttpGet]
 	[Route("{blogUrl}")]
-	public IActionResult GetBlog(string blogUrl, ILayoutRenderer layoutRenderer, IBlogCache blogCache) {
-		Blog? blog = blogCache.GetBlog(blogUrl);
+	public async Task<IActionResult> GetBlogAsync(string blogUrl, ILayoutRenderer layoutRenderer, IBlogCache blogCache) {
+		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
 		if(blog == null) {
 			return Content("ERROR", Accepts.Html);
 		}
@@ -30,7 +31,7 @@ public class HomeController : ControllerBase {
 
 	[HttpGet]
 	[Route("about")]
-	public IActionResult GetAbout(ILayoutRenderer layoutRenderer) {
-		return Content(layoutRenderer.Render("pages/about", new { name = "Vincent" }, new { name = "Brodin" }), Accepts.Html);
+	public async Task<IActionResult> GetAboutAsync(ILayoutRenderer layoutRenderer) {
+		return Content(await layoutRenderer.RenderAsync("pages/about", new { name = "Vincent" }, new { name = "Brodin" }), Accepts.Html);
 	}
 }

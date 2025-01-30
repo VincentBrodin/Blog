@@ -5,8 +5,13 @@ namespace BlogVb.Api.Services;
 
 public interface IViewCache {
 	string GetView(string key);
+	Task<string> GetViewAsync(string key, CancellationToken cancellationToken = default);
 	void CacheViews();
 	Task CacheViewsAsync(CancellationToken cancellationToken = default);
+
+	string CacheSingleView(string key);
+
+	Task<string> CacheSingleViewAsync(string key, CancellationToken cancellationToken = default);
 }
 public class ViewCache : IViewCache {
 	public bool HotReload { get; set; }
@@ -106,7 +111,7 @@ public class ViewCache : IViewCache {
 		return views[key];
 	}
 
-	public async Task<string> CacheSingleViewAsync(string key) {
+	public async Task<string> CacheSingleViewAsync(string key, CancellationToken cancellationToken = default) {
 		DateTime start = DateTime.Now;
 		foreach(string filePath in Directory.GetFiles(systemPath, filter, SearchOption.AllDirectories)) {
 			string name = GetTemplateName(systemPath, filePath);
@@ -117,7 +122,7 @@ public class ViewCache : IViewCache {
 			if(views.ContainsKey(name)) {
 				throw new Exception($"(OBS!) File name collision @ {filePath}");
 			}
-			string content = await File.ReadAllTextAsync(filePath);
+			string content = await File.ReadAllTextAsync(filePath, cancellationToken);
 
 			if(HotReload) {
 				Console.WriteLine("(OBS!)Hot reload is enabled");
@@ -149,6 +154,22 @@ public class ViewCache : IViewCache {
 		}
 		throw new Exception($"View {key} does not exist");
 	}
+
+	public async Task<string> GetViewAsync(string key, CancellationToken cancellationToken = default) {
+		if(!hasCached && cacheType == CacheType.Bunch && !HotReload) {
+			await CacheViewsAsync(cancellationToken);
+		}
+
+		if(views.TryGetValue(key, out string? content) && content != null) {
+			return content;
+		}
+		// We could not find the view
+		if(cacheType == CacheType.Single || HotReload) {
+			return await CacheSingleViewAsync(key);
+		}
+		throw new Exception($"View {key} does not exist");
+	}
+
 
 	private string GetTemplateName(string rootPath, string filePath) {
 		string relativePath = Path.GetRelativePath(rootPath, filePath);

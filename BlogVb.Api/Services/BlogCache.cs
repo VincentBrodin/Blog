@@ -6,9 +6,15 @@ namespace BlogVb.Api.Services;
 
 public interface IBlogCache {
 	Blog? GetBlog(string url, bool forceLoad = true);
+	Task<Blog?> GetBlogAsync(string url, bool forceLoad = true, CancellationToken cancellationToken = default);
 	Blog[] GetAllBlogs();
+	BlogForRendering[] GetAllBlogsForRendering();
 	void CacheBlogs();
 	Task CacheBlogsAsync(CancellationToken cancellationToken = default);
+
+	void CacheBlog(Blog blog);
+	Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default);
+
 }
 
 public class BlogCache : IBlogCache {
@@ -52,6 +58,7 @@ public class BlogCache : IBlogCache {
 		Console.WriteLine($"Cached all blogs [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
 	}
 
+
 	public async Task CacheBlogsAsync(CancellationToken cancellationToken = default) {
 		DateTime start = DateTime.Now;
 
@@ -78,13 +85,69 @@ public class BlogCache : IBlogCache {
 		Console.WriteLine($"Cached all blogs [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
 	}
 
-	public Blog[] GetAllBlogs() {
-		return [.. blogs.Values];
+
+	public void CacheBlog(Blog blog) {
+		DateTime start = DateTime.Now;
+
+		if(blogs.ContainsKey(blog.Url)) {
+			Console.WriteLine($"(OBS!) Blog collision @ {blog.ContentPath}");
+			return;
+		}
+
+		if(preload) {
+			blog.Load();
+		}
+
+		blogs.Add(blog.Url, blog);
+
+		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
+		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
+		Console.WriteLine($"Cached {blog.Name}  [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
 	}
+
+	public async Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default) {
+		DateTime start = DateTime.Now;
+
+		if(blogs.ContainsKey(blog.Url)) {
+			Console.WriteLine($"(OBS!) Blog collision @ {blog.ContentPath}");
+			return;
+		}
+
+		if(preload) {
+			await blog.LoadAsync(cancellationToken);
+		}
+
+		blogs.Add(blog.Url, blog);
+
+		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
+		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
+		Console.WriteLine($"Cached {blog.Name}  [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+	}
+
+
+
+	public Blog[] GetAllBlogs() {
+		return blogs.Values
+			.OrderByDescending(b => b.CreatedAt).ToArray();
+	}
+
+	public BlogForRendering[] GetAllBlogsForRendering() {
+		return blogs.Values
+			.OrderByDescending(b => b.CreatedAt)
+			.Aggregate(new List<BlogForRendering>(), (list, b) => {
+				list.Add(new BlogForRendering(b));
+				return list;
+			}).ToArray();
+	}
+
 
 	public Blog? GetBlog(string url, bool forceLoad = true) {
 		if(blogs.TryGetValue(url, out Blog? blog) && blog != null) {
-			if(forceLoad && !blog.IsLoaded) {
+			if(blog.IsLoaded) {
+				return blog;
+			}
+
+			if(forceLoad) {
 				DateTime start = DateTime.Now;
 				blog.Load();
 				byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
@@ -94,4 +157,23 @@ public class BlogCache : IBlogCache {
 		}
 		return null;
 	}
+
+	public async Task<Blog?> GetBlogAsync(string url, bool forceLoad = true, CancellationToken cancellationToken = default) {
+		if(blogs.TryGetValue(url, out Blog? blog) && blog != null) {
+			if(blog.IsLoaded) {
+				return blog;
+			}
+
+			if(forceLoad) {
+				DateTime start = DateTime.Now;
+				await blog.LoadAsync(cancellationToken);
+				byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
+				Console.WriteLine($"Cached {blog.Name} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+			}
+
+			return blog;
+		}
+		return null;
+	}
+
 }

@@ -23,16 +23,16 @@ public class ComponentsController : ControllerBase {
 
 	[HttpGet]
 	[Route("blogs")]
-	public IActionResult GetBlogs(IViewCache viewCache, IBlogCache blogCache) {
+	public async Task<IActionResult> GetBlogsAsync(IViewCache viewCache, IBlogCache blogCache) {
 		string[] blogs = blogCache.GetAllBlogs().Select(b => b.Name).ToArray();
-		string renderedHtml = Handlebars.Compile(viewCache.GetView("components/datalist"))(new { items = blogs });
+		string renderedHtml = Handlebars.Compile(await viewCache.GetViewAsync("components/datalist"))(new { items = blogs });
 		return Content(renderedHtml, Accepts.Html);
 	}
 
 	[HttpPost]
 	[Route("mdtohtml")]
-	public IActionResult PostMdToHtml([FromForm] string input) {
-		return Content(Markdown.ToHtml(input), Accepts.Html);
+	public IActionResult PostMdToHtml([FromForm] string content) {
+		return Content(Markdown.ToHtml(content), Accepts.Html);
 	}
 
 }
