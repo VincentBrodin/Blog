@@ -10,7 +10,8 @@
             <input type="text" id="tags" name="tags" placeholder="Enter Tags" class="input input-bordered w-full" />
             <small class="text-gray-500 mt-2">Use commas to separate multiple tags.</small>
         </div>
-        <div class="flex flex-col justify-center items-center">
+        <div class="flex flex-col justify-center h-full">
+            <label for="tags" class="font-semibold mb-2 opacity-0">Center</label>
             <button type="button" class="btn btn-primary">Upload</button>
         </div>
     </div>
@@ -21,7 +22,7 @@
     </div>
 
     <!--Markdown-->
-    <p id="read-time" class="text-lg font-bold text-indigo-600 mb-6">Current read time: 10m 24s</p>
+    <p id="read-time" class="text-lg font-bold text-primary mb-6">Current read time: 10m 24s</p>
     <div class="flex flex-wrap gap-4 grow">
         <div class="flex flex-col w-full md:w-auto flex-1 min-w-full">
             <label for="input" class="font-semibold mb-1">Input:</label>
@@ -29,15 +30,18 @@
                       hx-target="#output"
                       hx-swap="innerHTML"
                       hx-trigger="changed, keyup delay:500ms"
-                      hx-get="/components/mdtohtml"
+                      hx-post="/components/mdtohtml"
+                      data-autoresize
                       placeholder="Content"
                       name="input"
-                      class="textarea textarea-bordered w-full grow"></textarea>
+                      class="textarea textarea-bordered w-full grow"
+                      rows="2"
+                      style="box-sizing: border-box; resize: none;"></textarea>
         </div>
         <div class="flex flex-col w-full md:w-auto flex-1">
             <label for="output" class="font-semibold mb-1">Output:</label>
-            <div class="p-2 textarea textarea-bordered w-full grow">
-                <div id="output" class="prose prose-slate max-w-none">
+            <div class="p-2 textarea textarea-bordered grow">
+                <div id="output" class="prose prose-slate max-w-3xl mx-auto">
 
                 </div>
 
@@ -77,4 +81,17 @@
             read_time.innerHTML = `Current read time: ${readTimeMinutes}m ${readTimeSeconds}s`;
         });
         read_time.innerHTML = `Current read time: 0m 0s`;
-    });</script>
+        addAutoResize();
+    });
+    function addAutoResize() {
+        document.querySelectorAll('[data-autoresize]').forEach(function (element) {
+            element.style.boxSizing = 'border-box';
+            var offset = element.offsetHeight - element.clientHeight;
+            element.addEventListener('input', function (event) {
+                event.target.style.height = 'auto';
+                event.target.style.height = event.target.scrollHeight + offset + 'px';
+            });
+            element.removeAttribute('data-autoresize');
+        });
+    }
+</script>

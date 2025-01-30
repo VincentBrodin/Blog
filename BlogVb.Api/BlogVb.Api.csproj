@@ -29,6 +29,10 @@
 		</None>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Content Remove="wwwroot\js\autosize.js" />
+	</ItemGroup>
+
 
 
 	<ItemGroup>

@@ -29,9 +29,9 @@ public class ComponentsController : ControllerBase {
 		return Content(renderedHtml, Accepts.Html);
 	}
 
-	[HttpGet]
+	[HttpPost]
 	[Route("mdtohtml")]
-	public IActionResult GetMdToHtml([FromQuery] string input) {
+	public IActionResult PostMdToHtml([FromForm] string input) {
 		return Content(Markdown.ToHtml(input), Accepts.Html);
 	}
 
