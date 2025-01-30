@@ -105,7 +105,7 @@ public class Blog {
 				return;
 			}
 			Name = binding.Name;
-			Url = HttpUtility.UrlEncode(Name);
+			Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(Name));
 			Description = binding.Description;
 			CreatedAt = binding.CreatedAt;
 			LastChangeAt = binding.LastChangeAt;
@@ -126,10 +126,7 @@ public class Blog {
 	}
 
 	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, CancellationToken cancellationToken = default) {
-		string safeName = blogFromPost.Name;
-		foreach(char c in Path.GetInvalidFileNameChars()) {
-			safeName = safeName.Replace(c, '-');
-		}
+		string safeName = Helper.MakeFileSafe(blogFromPost.Name);
 		safeName += ".md";
 		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", safeName);
 		string metaPath = contentPath + ".json";

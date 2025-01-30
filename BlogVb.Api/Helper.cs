@@ -28,4 +28,11 @@ public static class Helper {
 
 		return (readTimeMinutes, readTimeSeconds);
 	}
+
+	public static string MakeFileSafe(string input) {
+		foreach(char c in Path.GetInvalidFileNameChars()) {
+			input = input.Replace(c, '-');
+		}
+		return input;
+	}
 }

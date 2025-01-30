@@ -11,14 +11,14 @@ namespace BlogVb.Api {
 			builder.Services.AddControllers();
 
 			builder.Services.AddSingleton<IViewCache>(_ => {
-				ViewCache viewCache = new(["views"], cacheType: CacheType.Single);
+				ViewCache viewCache = new(["views"], cacheType: CacheType.Bunch);
 				Handlebars.RegisterTemplate("forecast", viewCache.GetView("components/forecast"));
 				Handlebars.RegisterTemplate("nav", viewCache.GetView("components/nav"));
 				Handlebars.RegisterTemplate("footer", viewCache.GetView("components/footer"));
 				Handlebars.RegisterTemplate("blog", viewCache.GetView("components/blog"));
 				return viewCache;
 			});
-			builder.Services.AddSingleton<IBlogCache>(_ => new BlogCache(["blogs"]));
+			builder.Services.AddSingleton<IBlogCache>(_ => new BlogCache(["blogs"], true));
 			builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();
 
 			WebApplication app = builder.Build();
