@@ -25,11 +25,18 @@ public class MetaBlogBinding {
 	[JsonPropertyName("lastChangeAt")]
 	public DateTime LastChangeAt { get; set; }
 
+	[JsonPropertyName("readTimeSec")]
+	public int ReadTimeSec { get; set; }
+	[JsonPropertyName("readTimeMin")]
+	public int ReadTimeMin { get; set; }
+
+
 	public MetaBlogBinding() { }
 
 	public MetaBlogBinding(BlogFromPost blogFromPost) {
 		Name = blogFromPost.Name;
 		Description = blogFromPost.Description;
+		(ReadTimeMin, ReadTimeSec) = Helper.CalculateReadTime(blogFromPost.Content);
 	}
 }
 
@@ -40,6 +47,9 @@ public class BlogForRendering {
 	public string CreatedAt { get; set; } = string.Empty;
 	public string LastChangeAt { get; set; } = string.Empty;
 	public string Content { get; set; } = string.Empty;
+	public int ReadTimeSec { get; set; }
+	public int ReadTimeMin { get; set; }
+
 
 	public BlogForRendering(Blog blog, bool includeContent = false) {
 		Name = blog.Name;
@@ -47,6 +57,11 @@ public class BlogForRendering {
 		Description = blog.Description;
 		CreatedAt = blog.CreatedAt.ToString("dd MMM, yyyy @ HH:mm");
 		LastChangeAt = blog.LastChangeAt.ToString("dd MMM, yyyy @ HH:mm");
+
+		ReadTimeMin = blog.ReadTimeMin;
+		ReadTimeSec = blog.ReadTimeSec;
+
+
 		if(includeContent) {
 			Content = blog.Content;
 		}
@@ -55,7 +70,7 @@ public class BlogForRendering {
 
 public class Blog {
 	public string Name { get; set; } = string.Empty;
-	public string Url { get; private set; } = string.Empty;
+	public string Url { get; } = string.Empty;
 	public string Description { get; set; } = string.Empty;
 
 	public DateTime CreatedAt { get; set; }
@@ -63,6 +78,9 @@ public class Blog {
 
 
 	public string Content { get; set; } = string.Empty;
+	public int ReadTimeMin { get; set; }
+	public int ReadTimeSec { get; set; }
+
 
 	public string ContentPath { get; init; } = string.Empty;
 	public string MetaPath { get; init; } = string.Empty;
@@ -91,6 +109,8 @@ public class Blog {
 			Description = binding.Description;
 			CreatedAt = binding.CreatedAt;
 			LastChangeAt = binding.LastChangeAt;
+			ReadTimeMin = binding.ReadTimeMin;
+			ReadTimeSec = binding.ReadTimeSec;
 		}
 		catch(Exception exception) {
 			Console.WriteLine($"Problem loading meta data: {exception.Message}");
@@ -100,34 +120,10 @@ public class Blog {
 		IsValid = true;
 	}
 
-
+	#region Generate New Blog
 	public static Blog GenerateNewBlog(BlogFromPost blogFromPost) {
-		string safeName = blogFromPost.Name;
-		foreach(char c in Path.GetInvalidFileNameChars()) {
-			safeName = safeName.Replace(c, '-');
-		}
-		safeName += ".md";
-		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", safeName);
-		string metaPath = contentPath + ".json";
-
-		File.WriteAllText(contentPath, blogFromPost.Content);
-
-		MetaBlogBinding bindings = new(blogFromPost) {
-			CreatedAt = DateTime.Now,
-			LastChangeAt = DateTime.Now,
-		};
-		string bindingsJson = JsonSerializer.Serialize(bindings);
-		Console.WriteLine(bindingsJson);
-		File.WriteAllText(metaPath, bindingsJson);
-
-
-		// Makes sure that we don't need to load the blog twice saves us some compute :)
-		return new Blog(contentPath) {
-			Content = blogFromPost.Content,
-			IsLoaded = true
-		};
+		return GenerateNewBlogAsync(blogFromPost).GetAwaiter().GetResult();
 	}
-
 
 	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, CancellationToken cancellationToken = default) {
 		string safeName = blogFromPost.Name;
@@ -153,22 +149,11 @@ public class Blog {
 			IsLoaded = true
 		};
 	}
+	#endregion
 
+	#region Load
 	public void Load() {
-		if(IsLoaded) {
-			return;
-		}
-		if(!IsValid) {
-			Console.WriteLine("Blog is not valid can't load");
-		}
-
-		try {
-			Content = File.ReadAllText(ContentPath);
-			IsLoaded = true;
-		}
-		catch(Exception exception) {
-			Console.WriteLine($"Could not load blog {ContentPath} beacuse", exception.Message);
-		}
+		LoadAsync().GetAwaiter().GetResult();
 	}
 
 	public async Task LoadAsync(CancellationToken cancellationToken = default) {
@@ -187,6 +172,7 @@ public class Blog {
 			Console.WriteLine($"Could not load blog {ContentPath} beacuse", exception.Message);
 		}
 	}
+	#endregion
 
 	public void Update() {
 

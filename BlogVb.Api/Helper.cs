@@ -1,4 +1,6 @@
-﻿namespace BlogVb.Api;
+﻿using System.Text.RegularExpressions;
+
+namespace BlogVb.Api;
 
 public static class Helper {
 	public static string FormatStorageSize(long bytes) {
@@ -12,5 +14,18 @@ public static class Helper {
 		}
 
 		return $"{len:0.##} {sizes[order]}";
+	}
+
+	public static (int, int) CalculateReadTime(string markdown) {
+		markdown = Regex.Replace(markdown, @"(\*\*|__|\*|_|~~|`{1,3}|#{1,6}|\[.*?\]\(.*?\)|!\[.*?\]\(.*?\)|\>|-{3,}|={3,}|:.*?:|\|)", "");
+		markdown = Regex.Replace(markdown, @"[^a-zA-Z0-9]", "");
+
+		int characterCount = markdown.Length;
+		double wordCount = characterCount / 5.1; // Avrage word length in english
+
+		int readTimeMinutes = (int)Math.Floor(wordCount / 200);
+		int readTimeSeconds = (int)Math.Round(wordCount % 200 * 60 / 200);
+
+		return (readTimeMinutes, readTimeSeconds);
 	}
 }

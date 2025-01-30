@@ -35,27 +35,7 @@ public class BlogCache : IBlogCache {
 	}
 
 	public void CacheBlogs() {
-		DateTime start = DateTime.Now;
-
-		foreach(string path in Directory.GetFiles(systemPath, "*.md", SearchOption.AllDirectories)) {
-			Blog blog = new(path);
-			if(!blog.IsValid) {
-				continue;
-			}
-			if(blogs.ContainsKey(blog.Url)) {
-				Console.WriteLine($"(OBS!) Blog collision @ {path}");
-				continue;
-			}
-
-			if(preload) {
-				blog.Load();
-			}
-
-			blogs.Add(blog.Url, blog);
-		}
-		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-		Console.WriteLine($"Cached all blogs [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+		CacheBlogsAsync().GetAwaiter().GetResult();
 	}
 
 
@@ -87,22 +67,7 @@ public class BlogCache : IBlogCache {
 
 
 	public void CacheBlog(Blog blog) {
-		DateTime start = DateTime.Now;
-
-		if(blogs.ContainsKey(blog.Url)) {
-			Console.WriteLine($"(OBS!) Blog collision @ {blog.ContentPath}");
-			return;
-		}
-
-		if(preload) {
-			blog.Load();
-		}
-
-		blogs.Add(blog.Url, blog);
-
-		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-		Console.WriteLine($"Cached {blog.Name}  [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+		CacheBlogAsync(blog).GetAwaiter().GetResult();
 	}
 
 	public async Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default) {
@@ -142,20 +107,7 @@ public class BlogCache : IBlogCache {
 
 
 	public Blog? GetBlog(string url, bool forceLoad = true) {
-		if(blogs.TryGetValue(url, out Blog? blog) && blog != null) {
-			if(blog.IsLoaded) {
-				return blog;
-			}
-
-			if(forceLoad) {
-				DateTime start = DateTime.Now;
-				blog.Load();
-				byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-				Console.WriteLine($"Cached {blog.Name} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
-			}
-			return blog;
-		}
-		return null;
+		return GetBlogAsync(url, forceLoad).GetAwaiter().GetResult();
 	}
 
 	public async Task<Blog?> GetBlogAsync(string url, bool forceLoad = true, CancellationToken cancellationToken = default) {

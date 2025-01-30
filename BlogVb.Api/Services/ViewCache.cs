@@ -39,26 +39,7 @@ public class ViewCache : IViewCache {
 	}
 
 	public void CacheViews() {
-		if(hasCached) {
-			return;
-		}
-
-		DateTime start = DateTime.Now;
-
-		foreach(string filePath in Directory.GetFiles(systemPath, filter, SearchOption.AllDirectories)) {
-			string name = GetTemplateName(systemPath, filePath);
-			if(views.ContainsKey(name)) {
-				Console.WriteLine($"(OBS!) File name collision @ {filePath}");
-				continue;
-			}
-			string content = File.ReadAllText(filePath);
-			views.Add(name, content);
-			Console.WriteLine($"Added {name}");
-		}
-		hasCached = true;
-
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(views));
-		Console.WriteLine($"Cached all views in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+		CacheViewsAsync().GetAwaiter().GetResult();
 	}
 
 	public async Task CacheViewsAsync(CancellationToken cancellationToken = default) {
@@ -85,30 +66,7 @@ public class ViewCache : IViewCache {
 	}
 
 	public string CacheSingleView(string key) {
-		DateTime start = DateTime.Now;
-		foreach(string filePath in Directory.GetFiles(systemPath, filter, SearchOption.AllDirectories)) {
-			string name = GetTemplateName(systemPath, filePath);
-			if(name != key) {
-				continue;
-			}
-
-			if(views.ContainsKey(name)) {
-				throw new Exception($"(OBS!) File name collision @ {filePath}");
-			}
-			string content = File.ReadAllText(filePath);
-
-			if(HotReload) {
-				Console.WriteLine("(OBS!) Hot reload is enabled");
-				Console.WriteLine(content);
-				return content;
-			}
-
-			views.Add(name, content);
-		}
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(views));
-		Console.WriteLine($"Cached {key} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
-
-		return views[key];
+		return CacheSingleViewAsync(key).GetAwaiter().GetResult();
 	}
 
 	public async Task<string> CacheSingleViewAsync(string key, CancellationToken cancellationToken = default) {
@@ -141,18 +99,7 @@ public class ViewCache : IViewCache {
 
 
 	public string GetView(string key) {
-		if(!hasCached && cacheType == CacheType.Bunch && !HotReload) {
-			CacheViews();
-		}
-
-		if(views.TryGetValue(key, out string? content) && content != null) {
-			return content;
-		}
-		// We could not find the view
-		if(cacheType == CacheType.Single || HotReload) {
-			return CacheSingleView(key);
-		}
-		throw new Exception($"View {key} does not exist");
+		return GetViewAsync(key).GetAwaiter().GetResult();
 	}
 
 	public async Task<string> GetViewAsync(string key, CancellationToken cancellationToken = default) {
