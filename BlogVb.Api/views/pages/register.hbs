@@ -1,0 +1,47 @@
+﻿<div class="grow flex flex-col justify-center p-8">
+    <div class="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 class="mt-10 text-center text-2xl/9 font-bold tracking-tight">Create your account</h2>
+    </div>
+
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <form class="space-y-6" action="/account/create" method="post">
+            <div>
+                <label for="username" class="block text-sm/6 font-medium">Username</label>
+                <div class="mt-2">
+                    <input type="text" name="username" id="username" autocomplete="name" required class="input input-bordered w-full max-w-xs" />
+                </div>
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm/6 font-medium">Email address</label>
+                <div class="mt-2">
+                    <input type="email" name="email" id="email" autocomplete="email" required class="input input-bordered w-full max-w-xs" />
+                </div>
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm/6 font-medium">Password</label>
+                <div class="mt-2">
+                    <input type="password" id="password" name="password" autocomplete="new-password" required class="input input-bordered w-full max-w-xs" />
+                </div>
+            </div>
+
+
+            <div>
+                <label for="repeat-password" class="block text-sm/6 font-medium">Confirm Password</label>
+                <div class="mt-2">
+                    <input type="password" id="repeat-password" name="repeatPassword" autocomplete="new-password" required class="input input-bordered w-full max-w-xs" />
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="w-full btn btn-primary">Create account</button>
+            </div>
+        </form>
+
+        <p class="mt-10 text-center text-sm/6">
+            Already have an account?
+            <a href="/account/login" class="font-semibold text-primary">Sign in</a>
+        </p>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿using BlogVb.Api.Models;
+﻿using BlogVb.Api.Models.Blogs;
 using System.Text;
 using System.Text.Json;
 

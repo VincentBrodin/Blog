@@ -1,4 +1,4 @@
-﻿using BlogVb.Api.Models;
+﻿using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;

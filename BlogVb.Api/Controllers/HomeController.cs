@@ -1,8 +1,7 @@
-﻿using BlogVb.Api.Models;
+﻿using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
-using System.Formats.Asn1;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -12,7 +11,7 @@ public class HomeController : ControllerBase {
 	[Route("")]
 	public async Task<IActionResult> GetAsync(ILayoutRenderer layoutRenderer, IBlogCache blogCache) {
 		BlogForRendering[] blogs = blogCache.GetAllBlogsForRendering();
-		return Content(await layoutRenderer.RenderAsync("pages/home", new { loggedIn = true }, new { blogs }), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/home", new { loggedIn = false }, new { blogs }), Accepts.Html);
 	}
 
 	[HttpGet]
