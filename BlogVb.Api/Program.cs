@@ -1,5 +1,6 @@
 using BlogVb.Api.Services;
 using HandlebarsDotNet;
+using Microsoft.EntityFrameworkCore;
 
 namespace BlogVb.Api {
 	public static class Program {
@@ -10,6 +11,8 @@ namespace BlogVb.Api {
 
 			builder.Services.AddControllers();
 
+			builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration["ConnectionStrings:SQLiteDefualt"]));
+
 			builder.Services.AddSingleton<IViewCache>(_ => {
 				ViewCache viewCache = new(["views"], cacheType: CacheType.Bunch);
 				Handlebars.RegisterTemplate("forecast", viewCache.GetView("components/forecast"));
@@ -19,7 +22,9 @@ namespace BlogVb.Api {
 				return viewCache;
 			});
 			builder.Services.AddSingleton<IBlogCache>(_ => new BlogCache(["blogs"], true));
+
 			builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();
+			builder.Services.AddScoped<IAccountService, AccountService>();
 
 			WebApplication app = builder.Build();
 

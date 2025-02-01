@@ -9,6 +9,12 @@
 	<ItemGroup>
 		<PackageReference Include="Handlebars.Net" Version="2.1.6" />
 		<PackageReference Include="Markdig" Version="0.40.0" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.1">
+		  <PrivateAssets>all</PrivateAssets>
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
@@ -27,6 +33,10 @@
 		<None Include="blogs\**">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Content Remove="wwwroot\js\LoadingScreen.js" />
 	</ItemGroup>
 
 

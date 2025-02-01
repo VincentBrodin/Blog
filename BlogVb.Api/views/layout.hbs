@@ -13,6 +13,14 @@
     {{>nav}}
     {{{body}}}
     {{>footer}}
+
+    <div id="loading" class="noOverlay fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-50 backdrop-blur-md">
+        <div class="w-full max-w-sm rounded-lg border border-primary bg-base-100 p-5 text-center shadow-lg">
+            <h1 class="mb-5 text-xl font-bold">Loading...</h1>
+            <span class="loading loading-infinity loading-lg"></span>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
 </body>
 </html>

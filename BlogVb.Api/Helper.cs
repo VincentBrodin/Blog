@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Net.Mail;
 
 namespace BlogVb.Api;
 
@@ -34,5 +35,20 @@ public static class Helper {
 			input = input.Replace(c, '-');
 		}
 		return input;
+	}
+
+	public static bool IsValidEmail(string email) {
+		var trimmedEmail = email.Trim();
+
+		if(!trimmedEmail.EndsWith('.')) {
+			try {
+				var addr = new MailAddress(email);
+				return addr.Address == trimmedEmail;
+			}
+			catch {
+				return false;
+			}
+		}
+		return false;
 	}
 }
