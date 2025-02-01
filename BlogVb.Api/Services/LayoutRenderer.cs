@@ -1,4 +1,5 @@
-﻿using HandlebarsDotNet;
+﻿using BlogVb.Api.Models.Accounts;
+using HandlebarsDotNet;
 
 namespace BlogVb.Api.Services;
 
@@ -10,9 +11,13 @@ public interface ILayoutRenderer {
 public class LayoutRenderer : ILayoutRenderer {
 	public string LayoutKey { get; set; } = "layout";
 	private readonly IViewCache viewCache;
+	private readonly ICookieVault cookieVault;
+	private readonly IHttpContextAccessor httpContextAccessor;
 
-	public LayoutRenderer(IViewCache viewCache) {
+	public LayoutRenderer(IViewCache viewCache, ICookieVault cookieVault, IHttpContextAccessor httpContextAccessor) {
 		this.viewCache = viewCache;
+		this.cookieVault = cookieVault;
+		this.httpContextAccessor = httpContextAccessor;
 	}
 
 	public string Render(string key, object? layoutData = default, object? bodyData = default) {
@@ -39,7 +44,9 @@ public class LayoutRenderer : ILayoutRenderer {
 			time = now.TimeOfDay,
 		};
 
+		HttpContext? httpContext = httpContextAccessor.HttpContext;
 		object data = new {
+			account = httpContext == null ? null : cookieVault.Get<Account>(httpContext, "user"),
 			layout = layoutData,
 			body = body(bodyData),
 

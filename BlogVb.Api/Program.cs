@@ -10,6 +10,7 @@ namespace BlogVb.Api {
 			// Add services to the container.
 
 			builder.Services.AddControllers();
+			builder.Services.AddHttpContextAccessor();
 
 			builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration["ConnectionStrings:SQLiteDefualt"]));
 
@@ -22,6 +23,7 @@ namespace BlogVb.Api {
 				return viewCache;
 			});
 			builder.Services.AddSingleton<IBlogCache>(_ => new BlogCache(["blogs"], true));
+			builder.Services.AddSingleton<ICookieVault, CookieVault>();
 
 			builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();
 			builder.Services.AddScoped<IAccountService, AccountService>();

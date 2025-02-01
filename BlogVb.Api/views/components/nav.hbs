@@ -15,7 +15,7 @@
             <datalist id="blogs">
             </datalist>
         </div>-->
-        {{#if layout.loggedin}}
+        {{#if account}}
         <div class="dropdown dropdown-end">
             <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
                 <div class="w-10 rounded-full">
@@ -33,7 +33,7 @@
                 </li>
                 <li><a>Settings</a></li>
                 <li><a href="/admin/create">New post</a></li>
-                <li><a>Logout</a></li>
+                <li><a href="/account/logout">Logout</a></li>
             </ul>
         </div>
         {{else}}
