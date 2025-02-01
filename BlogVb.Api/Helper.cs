@@ -2,6 +2,16 @@
 using System.Net.Mail;
 
 namespace BlogVb.Api;
+public enum WebError {
+	BadRequest = 400,
+	Unauthorized = 401,
+	Forbidden = 403,
+	NotFound = 404,
+	MethodNotAllowed = 405,
+	InternalServerError = 500,
+	NotImplemented = 501,
+	ServiceUnavailable = 503
+}
 
 public static class Helper {
 	public static string FormatStorageSize(long bytes) {
@@ -50,5 +60,28 @@ public static class Helper {
 			}
 		}
 		return false;
+	}
+
+	public static string GetErrorMessage(WebError error) {
+		switch(error) {
+			case WebError.BadRequest:
+				return "Bad Request: The server could not understand the request due to invalid syntax.";
+			case WebError.Unauthorized:
+				return "Unauthorized: The client must authenticate itself to get the requested response.";
+			case WebError.Forbidden:
+				return "Forbidden: The client does not have access rights to the content.";
+			case WebError.NotFound:
+				return "Not Found: The server cannot find the requested resource.";
+			case WebError.MethodNotAllowed:
+				return "Method Not Allowed: The request method is known by the server but is not supported by the target resource.";
+			case WebError.InternalServerError:
+				return "Internal Server Error: The server has encountered a situation it doesn't know how to handle.";
+			case WebError.NotImplemented:
+				return "Not Implemented: The request method is not supported by the server.";
+			case WebError.ServiceUnavailable:
+				return "Service Unavailable: The server is not ready to handle the request.";
+			default:
+				return "Unknown error.";
+		}
 	}
 }

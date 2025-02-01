@@ -18,8 +18,11 @@ public class AdminController : ControllerBase {
 			Response.Headers.Append("HX-Redirect", "/account/login");
 			return Redirect("/account/login");
 		}
+		else if(account.Role == 0) {
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
+		}
 
-		return Content(await layoutRenderer.RenderAsync("pages/create", new {account}), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/create", new { account }), Accepts.Html);
 	}
 
 	[HttpPost]
@@ -28,12 +31,15 @@ public class AdminController : ControllerBase {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account == null) {
 			Response.Headers.Append("HX-Redirect", "/account/login");
-			return Redirect("/account/login");
+		}
+		else if(account.Role == 0) {
+			return Unauthorized();
 		}
 
 		Console.WriteLine(JsonSerializer.Serialize(blogFromPost));
 		Blog blog = await Blog.GenerateNewBlogAsync(blogFromPost);
 		await blogCache.CacheBlogAsync(blog);
-		return Redirect("/");
+		Response.Headers.Append("HX-Redirect", "/");
+		return Ok(blog);
 	}
 }

@@ -21,15 +21,7 @@ public class HomeController : ControllerBase {
 	public async Task<IActionResult> GetBlogAsync(string blogUrl, ILayoutRenderer layoutRenderer, IBlogCache blogCache, ICookieVault cookieVault) {
 		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
 		if(blog == null) {
-			string? cameFrom = cookieVault.Get<string>(HttpContext, "came-from");
-			if(cameFrom == null) {
-				Response.Headers.Append("HX-Redirect", "/");
-				return Redirect("/");
-			}
-			else {
-				Response.Headers.Append("HX-Redirect", cameFrom);
-				return Redirect(cameFrom);
-			}
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}
 		else {
 			cookieVault.Set(HttpContext, "came-from", $"/{blogUrl}");
