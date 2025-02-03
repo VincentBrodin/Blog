@@ -15,5 +15,3 @@ Accept: text/html
 GET {{HtmxWithHandlebars_HostAddress}}/components/blogs/
 Accept: text/html
 ###
-
-

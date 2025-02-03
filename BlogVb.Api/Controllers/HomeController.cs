@@ -49,12 +49,7 @@ public class HomeController : ControllerBase {
 		if(!IO::File.Exists(filePath))
 			return NotFound();
 
-		FileExtensionContentTypeProvider provider = new();
-		if(!provider.TryGetContentType(filePath, out string? contentType)) {
-			contentType = "application/octet-stream";
-		}
-
 		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
-		return File(fileBytes, contentType);
+		return File(fileBytes, Helper.GetFileContentType(filePath));
 	}
 }
