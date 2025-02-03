@@ -32,7 +32,10 @@ public class ComponentsController : ControllerBase {
 	[HttpPost]
 	[Route("mdtohtml")]
 	public IActionResult PostMdToHtml([FromForm] string content) {
-		return Content(Markdown.ToHtml(content), Accepts.Html);
+		MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+			.UseAutoIdentifiers() 
+			.Build();
+		return Content(Markdown.ToHtml(content, pipeline), Accepts.Html);
 	}
 
 }

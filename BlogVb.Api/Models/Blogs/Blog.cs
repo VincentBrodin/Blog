@@ -6,6 +6,8 @@ public class Blog {
 	public string Name { get; set; } = string.Empty;
 	public string Url { get; } = string.Empty;
 	public string Description { get; set; } = string.Empty;
+	public string Author { get; set; } = string.Empty;
+	public string HeaderName { get; set; } = string.Empty;
 
 	public DateTime CreatedAt { get; set; }
 	public DateTime LastChangeAt { get; set; }
@@ -41,6 +43,8 @@ public class Blog {
 			Name = binding.Name;
 			Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(Name));
 			Description = binding.Description;
+			Author = binding.Author;
+			HeaderName = binding.HeaderName;
 			CreatedAt = binding.CreatedAt;
 			LastChangeAt = binding.LastChangeAt;
 			ReadTimeMin = binding.ReadTimeMin;
@@ -59,18 +63,33 @@ public class Blog {
 		return GenerateNewBlogAsync(blogFromPost).GetAwaiter().GetResult();
 	}
 
-	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, CancellationToken cancellationToken = default) {
+	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, string author = "John Doe", CancellationToken cancellationToken = default) {
 		string safeName = Helper.MakeFileSafe(blogFromPost.Name);
-		safeName += ".md";
-		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", safeName);
+
+		string contentName = safeName + ".md";
+		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", contentName);
 		string metaPath = contentPath + ".json";
 
 		await File.WriteAllTextAsync(contentPath, blogFromPost.Content, cancellationToken);
 
 		MetaBlogBinding bindings = new(blogFromPost) {
+			Author = author,
 			CreatedAt = DateTime.Now,
 			LastChangeAt = DateTime.Now,
 		};
+
+		// Write image to disk and add section to meta
+		if(blogFromPost.Header != null) {
+			string imageName = safeName + Path.GetExtension(blogFromPost.Header.FileName);
+			string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", imageName);
+			Console.WriteLine(imagePath);
+
+			bindings.HeaderName = imageName;
+
+			await using Stream fileStream = new FileStream(imagePath, FileMode.Create);
+			await blogFromPost.Header.CopyToAsync(fileStream, cancellationToken);
+		}
+
 		string bindingsJson = JsonSerializer.Serialize(bindings);
 		await File.WriteAllTextAsync(metaPath, bindingsJson, cancellationToken);
 

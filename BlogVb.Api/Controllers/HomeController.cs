@@ -3,6 +3,8 @@ using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
+using IO = System.IO;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -25,7 +27,10 @@ public class HomeController : ControllerBase {
 		}
 		else {
 			cookieVault.Set(HttpContext, "came-from", $"/{blogUrl}");
-			return Content(await layoutRenderer.RenderAsync("pages/blog", bodyData: new { content = Markdown.ToHtml(blog.Content) }), Accepts.Html);
+			MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+				.UseAutoIdentifiers()
+				.Build();
+			return Content(await layoutRenderer.RenderAsync("pages/blog", bodyData: new { content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
 		}
 	}
 
@@ -35,5 +40,16 @@ public class HomeController : ControllerBase {
 	public async Task<IActionResult> GetAboutAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
 		cookieVault.Set(HttpContext, "came-from", "/about");
 		return Content(await layoutRenderer.RenderAsync("pages/about"), Accepts.Html);
+	}
+
+	[HttpGet]
+	[Route("images/{fileName}")]
+	public IActionResult GetImage(string fileName) {
+		var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", fileName);
+		if(!IO::File.Exists(filePath))
+			return NotFound();
+
+		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
+		return File(fileBytes, Helper.GetFileContentType(filePath));
 	}
 }
