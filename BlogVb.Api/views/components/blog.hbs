@@ -1,7 +1,7 @@
 ﻿
 <div class="card w-full bg-base-100 shadow-xl hover:shadow-2xl transition-all">
     <figure>
-        <img src="/images/{{blog.headerName}}" alt="Blog Image" class="h-48 w-full object-cover" />
+        <img src="/images/{{blog.headerName}}" loading="lazy" alt="Blog Image" class="h-48 w-full object-cover" />
     </figure>
     <div class="card-body">
         <h2 class="card-title text-xl font-bold">{{blog.name}}</h2>
@@ -19,6 +19,7 @@
             {{/if}}
         </div>
         <div class="card-actions justify-end">
+            <a class="btn btn-primary mr-5" href="admin/edit/{{blog.url}}">Edit</a>
             <a class="btn btn-primary" href="/{{blog.url}}">Read More</a>
         </div>
     </div>

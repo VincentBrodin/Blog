@@ -59,43 +59,43 @@ public class Blog {
 	}
 
 	#region Generate New Blog
-	public static Blog GenerateNewBlog(BlogFromPost blogFromPost) {
-		return GenerateNewBlogAsync(blogFromPost).GetAwaiter().GetResult();
+	public static Blog GenerateNewBlog(CreateBlog createBlog) {
+		return GenerateNewBlogAsync(createBlog).GetAwaiter().GetResult();
 	}
 
-	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, string author = "John Doe", CancellationToken cancellationToken = default) {
-		string safeName = Helper.MakeFileSafe(blogFromPost.Name);
+	public static async Task<Blog> GenerateNewBlogAsync(CreateBlog createBlog, string author = "John Doe", CancellationToken cancellationToken = default) {
+		string safeName = Helper.MakeFileSafe(createBlog.Name);
 
 		string contentName = safeName + ".md";
 		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", contentName);
 		string metaPath = contentPath + ".json";
 
-		await File.WriteAllTextAsync(contentPath, blogFromPost.Content, cancellationToken);
+		await File.WriteAllTextAsync(contentPath, createBlog.Content, cancellationToken);
 
-		MetaBlogBinding bindings = new(blogFromPost) {
+		MetaBlogBinding binding = new(createBlog) {
 			Author = author,
 			CreatedAt = DateTime.Now,
 			LastChangeAt = DateTime.Now,
 		};
 
 		// Write image to disk and add section to meta
-		if(blogFromPost.Header != null) {
-			string imageName = safeName + Path.GetExtension(blogFromPost.Header.FileName);
+		if(createBlog.Header != null) {
+			string imageName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
 			string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", imageName);
 			Console.WriteLine(imagePath);
 
-			bindings.HeaderName = imageName;
+			binding.HeaderName = imageName;
 
 			await using Stream fileStream = new FileStream(imagePath, FileMode.Create);
-			await blogFromPost.Header.CopyToAsync(fileStream, cancellationToken);
+			await createBlog.Header.CopyToAsync(fileStream, cancellationToken);
 		}
 
-		string bindingsJson = JsonSerializer.Serialize(bindings);
+		string bindingsJson = JsonSerializer.Serialize(binding);
 		await File.WriteAllTextAsync(metaPath, bindingsJson, cancellationToken);
 
 		// Makes sure that we don't need to load the blog twice saves us some compute :)
 		return new Blog(contentPath) {
-			Content = blogFromPost.Content,
+			Content = createBlog.Content,
 			IsLoaded = true
 		};
 	}
@@ -124,7 +124,43 @@ public class Blog {
 	}
 	#endregion
 
-	public void Update() {
+	public async Task UpdateAsync(EditBlog editBlog, CancellationToken cancellationToken = default) {
+		await File.WriteAllTextAsync(ContentPath, editBlog.Content, cancellationToken);
 
+		MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(File.ReadAllText(MetaPath));
+
+		if(binding == null) {
+			Console.WriteLine($"Problem loading meta data: Could not parse json");
+			return;
+		}
+
+		binding.Name = editBlog.Name;
+		binding.Description = editBlog.Description;
+		binding.LastChangeAt = DateTime.Now;
+		(binding.ReadTimeMin, binding.ReadTimeSec) = Helper.CalculateReadTime(editBlog.Content);
+
+		if(editBlog.Header != null) {
+			string oldImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			if(File.Exists(oldImagePath)) {
+				File.Delete(oldImagePath);
+			}
+
+			binding.HeaderName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
+
+			string newImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			await using Stream fileStream = new FileStream(newImagePath, FileMode.Create);
+			await editBlog.Header.CopyToAsync(fileStream, cancellationToken);
+		}
+
+		string bindingsJson = JsonSerializer.Serialize(binding);
+		await File.WriteAllTextAsync(MetaPath, bindingsJson, cancellationToken);
+
+		Name = binding.Name;
+		Description = binding.Description;
+		HeaderName = binding.HeaderName;
+		Content = editBlog.Content;
+		LastChangeAt = binding.LastChangeAt;
+		ReadTimeMin = binding.ReadTimeMin;
+		ReadTimeSec = binding.ReadTimeSec;
 	}
 }

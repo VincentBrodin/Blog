@@ -26,10 +26,17 @@ public class MetaBlogBinding {
 
 	public MetaBlogBinding() { }
 
-	public MetaBlogBinding(BlogFromPost blogFromPost) {
-		Name = blogFromPost.Name;
-		Description = blogFromPost.Description;
-		(ReadTimeMin, ReadTimeSec) = Helper.CalculateReadTime(blogFromPost.Content);
+	public MetaBlogBinding(CreateBlog createBlog) {
+		Name = createBlog.Name;
+		Description = createBlog.Description;
+		(ReadTimeMin, ReadTimeSec) = Helper.CalculateReadTime(createBlog.Content);
 	}
+
+	public MetaBlogBinding(EditBlog editBlog) {
+		Name = editBlog.Name;
+		Description = editBlog.Description;
+		(ReadTimeMin, ReadTimeSec) = Helper.CalculateReadTime(editBlog.Content);
+	}
+
 }
 

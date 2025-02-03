@@ -10,6 +10,53 @@ namespace BlogVb.Api.Controllers;
 public class AdminController : ControllerBase {
 
 	[HttpGet]
+	[Route("edit/{blogUrl}")]
+	public async Task<IActionResult> GetCreateAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault, IBlogCache blogCache, string blogUrl) {
+		cookieVault.Set(HttpContext, "came-from", $"/admin/edit/{blogUrl}");
+		Account? account = cookieVault.Get<Account>(HttpContext, "user");
+		if(account == null) {
+			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Redirect("/account/login");
+		}
+		else if(account.Role == 0) {
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
+		}
+
+		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
+		if(blog == null) {
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
+		}
+		EditBlog editBlog = new(blog);
+		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: editBlog), Accepts.Html);
+	}
+
+	[HttpPost]
+	[Route("edit/{blogUrl}")]
+	public async Task<IActionResult> PostEditAsync(IBlogCache blogCache, ICookieVault cookieVault, [FromForm] EditBlog editBlog, string blogUrl) {
+		Account? account = cookieVault.Get<Account>(HttpContext, "user");
+		if(account == null) {
+			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Unauthorized();
+		}
+		else if(account.Role == 0) {
+			return Unauthorized();
+		}
+
+		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
+		if(blog == null) {
+			return NotFound();
+		}
+
+		await blog.UpdateAsync(editBlog);
+
+		Response.Headers.Append("HX-Redirect", "/");
+		return Redirect("/");
+	}
+
+
+
+
+	[HttpGet]
 	[Route("create")]
 	public async Task<IActionResult> GetCreateAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
 		cookieVault.Set(HttpContext, "came-from", "/admin/create");
@@ -27,7 +74,7 @@ public class AdminController : ControllerBase {
 
 	[HttpPost]
 	[Route("create")]
-	public async Task<IActionResult> PostCreateAsync(IBlogCache blogCache, ICookieVault cookieVault, [FromForm] BlogFromPost blogFromPost) {
+	public async Task<IActionResult> PostCreateAsync(IBlogCache blogCache, ICookieVault cookieVault, [FromForm] CreateBlog createBlog) {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account == null) {
 			Response.Headers.Append("HX-Redirect", "/account/login");
@@ -37,7 +84,7 @@ public class AdminController : ControllerBase {
 			return Unauthorized();
 		}
 
-		Blog blog = await Blog.GenerateNewBlogAsync(blogFromPost, account.Username);
+		Blog blog = await Blog.GenerateNewBlogAsync(createBlog, account.Username);
 		await blogCache.CacheBlogAsync(blog);
 		Response.Headers.Append("HX-Redirect", "/");
 		return Redirect("/");

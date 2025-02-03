@@ -2,7 +2,7 @@
 
 namespace BlogVb.Api.Models.Blogs;
 
-public class BlogFromPost {
+public class CreateBlog {
 	[JsonPropertyName("name")]
 	public string Name { get; set; } = string.Empty;
 	[JsonPropertyName("description")]
