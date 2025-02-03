@@ -4,6 +4,7 @@ using BlogVb.Api.Services;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.StaticFiles;
+using IO = System.IO;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -26,7 +27,10 @@ public class HomeController : ControllerBase {
 		}
 		else {
 			cookieVault.Set(HttpContext, "came-from", $"/{blogUrl}");
-			return Content(await layoutRenderer.RenderAsync("pages/blog", bodyData: new { content = Markdown.ToHtml(blog.Content) }), Accepts.Html);
+			MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+				.UseAutoIdentifiers()
+				.Build();
+			return Content(await layoutRenderer.RenderAsync("pages/blog", bodyData: new { content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
 		}
 	}
 
@@ -42,7 +46,7 @@ public class HomeController : ControllerBase {
 	[Route("images/{fileName}")]
 	public IActionResult GetImage(string fileName) {
 		var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", fileName);
-		if(!System.IO.File.Exists(filePath))
+		if(!IO::File.Exists(filePath))
 			return NotFound();
 
 		FileExtensionContentTypeProvider provider = new();
@@ -50,7 +54,7 @@ public class HomeController : ControllerBase {
 			contentType = "application/octet-stream";
 		}
 
-		byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
 		return File(fileBytes, contentType);
 	}
 }

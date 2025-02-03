@@ -12,7 +12,11 @@
         </div>
 
         <div class="flex justify-between items-center text-sm text-gray-400">
+            {{#if blog.author}}
             <span>{{blog.author}}</span>
+            {{else}}
+            <span>John Doe</span>
+            {{/if}}
         </div>
         <div class="card-actions justify-end">
             <a class="btn btn-primary" href="/{{blog.url}}">Read More</a>

@@ -124,7 +124,7 @@ public class AccountController : ControllerBase {
 
 	[HttpGet]
 	[Route("logout")]
-	public async Task<IActionResult> GetLogout(ICookieVault cookieVault) {
+	public IActionResult GetLogout(ICookieVault cookieVault) {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account != null) {
 			cookieVault.Remove(HttpContext, "user");
