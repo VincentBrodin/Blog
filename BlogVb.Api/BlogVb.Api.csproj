@@ -18,31 +18,32 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="wwwroot\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Update="wwwroot\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="views\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Update="views\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="blogs\**">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Update="blogs\**">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
 	</ItemGroup>
-
-	<ItemGroup>
-	  <Content Remove="wwwroot\js\LoadingScreen.js" />
-	</ItemGroup>
-
 
 
 	<ItemGroup>
 		<UpToDateCheckBuilt Include="./wwwroot/css/input.css" Set="Css" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="wwwroot\css\output.css">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 	<Target Name="Tailwind" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild">

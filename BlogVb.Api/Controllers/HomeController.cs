@@ -3,6 +3,7 @@ using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -35,5 +36,21 @@ public class HomeController : ControllerBase {
 	public async Task<IActionResult> GetAboutAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
 		cookieVault.Set(HttpContext, "came-from", "/about");
 		return Content(await layoutRenderer.RenderAsync("pages/about"), Accepts.Html);
+	}
+
+	[HttpGet]
+	[Route("images/{fileName}")]
+	public IActionResult GetImage(string fileName) {
+		var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", fileName);
+		if(!System.IO.File.Exists(filePath))
+			return NotFound();
+
+		FileExtensionContentTypeProvider provider = new();
+		if(!provider.TryGetContentType(filePath, out string? contentType)) {
+			contentType = "application/octet-stream";
+		}
+
+		byte[] fileBytes = System.IO.File.ReadAllBytes(filePath);
+		return File(fileBytes, contentType);
 	}
 }

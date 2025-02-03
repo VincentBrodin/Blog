@@ -31,15 +31,15 @@ public class AdminController : ControllerBase {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account == null) {
 			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Unauthorized();
 		}
 		else if(account.Role == 0) {
 			return Unauthorized();
 		}
 
-		Console.WriteLine(JsonSerializer.Serialize(blogFromPost));
-		Blog blog = await Blog.GenerateNewBlogAsync(blogFromPost);
+		Blog blog = await Blog.GenerateNewBlogAsync(blogFromPost, account.Username);
 		await blogCache.CacheBlogAsync(blog);
 		Response.Headers.Append("HX-Redirect", "/");
-		return Ok(blog);
+		return Redirect("/");
 	}
 }

@@ -10,4 +10,7 @@ public class BlogFromPost {
 
 	[JsonPropertyName("content")]
 	public string Content { get; set; } = string.Empty;
+
+	[JsonPropertyName("header")]
+	public IFormFile? Header { get; set; }
 }

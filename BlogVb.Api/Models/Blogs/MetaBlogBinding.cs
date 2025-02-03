@@ -7,6 +7,11 @@ public class MetaBlogBinding {
 	public string Name { get; set; } = string.Empty;
 	[JsonPropertyName("description")]
 	public string Description { get; set; } = string.Empty;
+	[JsonPropertyName("author")]
+	public string Author { get; set; } = string.Empty;
+
+	[JsonPropertyName("headerName")]
+	public string HeaderName { get; set; } = string.Empty;
 	[JsonPropertyName("createdAt")]
 	public DateTime CreatedAt { get; set; }
 
