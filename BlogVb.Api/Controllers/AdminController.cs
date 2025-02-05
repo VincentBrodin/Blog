@@ -27,7 +27,7 @@ public class AdminController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}
 		EditBlog editBlog = new(blog);
-		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: new {blog = editBlog}), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: new { blog = editBlog }), Accepts.Html);
 	}
 
 	[HttpPost]
