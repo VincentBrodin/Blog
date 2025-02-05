@@ -1,4 +1,5 @@
 ﻿using BlogVb.Api.Models.Accounts;
+using BlogVb.Api.Tools;
 using HandlebarsDotNet;
 
 namespace BlogVb.Api.Services;
@@ -29,7 +30,7 @@ public class LayoutRenderer : ILayoutRenderer {
 		return RenderAsync(key, layoutData, bodyData).GetAwaiter().GetResult();
 	}
 
-	public async Task<string> RenderAsync(string key, object? layoutData = default, object? bodyData = default, CancellationToken cancellationToken = default) {
+	public async Task<string> RenderAsync(string key, dynamic? layoutData = default, dynamic? bodyData = default, CancellationToken cancellationToken = default) {
 		var layout = Handlebars.Compile(await viewCache.GetViewAsync(LayoutKey, cancellationToken));
 		var body = Handlebars.Compile(await viewCache.GetViewAsync(key, cancellationToken));
 
@@ -50,12 +51,17 @@ public class LayoutRenderer : ILayoutRenderer {
 		};
 
 		HttpContext? httpContext = httpContextAccessor.HttpContext;
+		Account? account = httpContext == null ? null : cookieVault.Get<Account>(httpContext, "user");
+
+		// Convert bodyData to ExpandoObject if needed
+		var mergedBodyData = Helper.ToExpandoObject(bodyData);
+		mergedBodyData.account = account; // Inject account into bodyData
+		bodyData = mergedBodyData;
+
 		object data = new {
-			account = httpContext == null ? null : cookieVault.Get<Account>(httpContext, "user"),
+			account,
 			layout = layoutData,
 			body = body(bodyData),
-
-			//Extra tools that can be usefull
 			tools
 		};
 

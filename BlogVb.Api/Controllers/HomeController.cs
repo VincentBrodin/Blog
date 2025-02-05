@@ -1,9 +1,8 @@
-﻿using BlogVb.Api.Models.Accounts;
-using BlogVb.Api.Models.Blogs;
+﻿using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
+using BlogVb.Api.Tools;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.StaticFiles;
 using IO = System.IO;
 
 namespace BlogVb.Api.Controllers;
@@ -14,14 +13,14 @@ public class HomeController : ControllerBase {
 	[Route("")]
 	public async Task<IActionResult> GetAsync(ILayoutRenderer layoutRenderer, IBlogCache blogCache, ICookieVault cookieVault) {
 		cookieVault.Set(HttpContext, "came-from", "/");
-		BlogForRendering[] blogs = blogCache.GetAllBlogsForRendering();
+		List<BlogForRendering> blogs = await blogCache.GetAllBlogsForRenderingAsync();
 		return Content(await layoutRenderer.RenderAsync("pages/home", bodyData: new { blogs }), Accepts.Html);
 	}
 
 	[HttpGet]
 	[Route("{blogUrl}")]
 	public async Task<IActionResult> GetBlogAsync(string blogUrl, ILayoutRenderer layoutRenderer, IBlogCache blogCache, ICookieVault cookieVault) {
-		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
+		Blog? blog = await blogCache.GetBlogAsync(blogUrl, true);
 		if(blog == null) {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}

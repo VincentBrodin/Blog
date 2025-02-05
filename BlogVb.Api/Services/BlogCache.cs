@@ -1,131 +1,116 @@
 ﻿using BlogVb.Api.Models.Blogs;
+using BlogVb.Api.Tools;
+using System.Formats.Asn1;
 using System.Text;
 using System.Text.Json;
 
 namespace BlogVb.Api.Services;
 
 public interface IBlogCache {
-	Blog? GetBlog(string url, bool forceLoad = true);
-	Task<Blog?> GetBlogAsync(string url, bool forceLoad = true, CancellationToken cancellationToken = default);
-	Blog[] GetAllBlogs();
-	BlogForRendering[] GetAllBlogsForRendering();
-	void CacheBlogs();
-	Task CacheBlogsAsync(CancellationToken cancellationToken = default);
-
-	void CacheBlog(Blog blog);
+	Blog? GetBlog(string url, bool load = false);
+	Task<Blog?> GetBlogAsync(string url, bool load = false, CancellationToken cancellationToken = default);
+	Task<List<Blog>> GetAllBlogsAsync(bool load = false, CancellationToken cancellationToken = default);
+	Task<List<BlogForRendering>> GetAllBlogsForRenderingAsync(CancellationToken cancellationToken = default);
 	Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default);
 
 }
 
-public class BlogCache : IBlogCache {
-	private readonly Dictionary<string, Blog> blogs = [];
+public class BlogCache : IBlogCache, IAsyncDisposable {
+	private readonly Dictionary<string, string> blogsPath = [];
 	private readonly string systemPath;
-	private readonly bool preload;
 
-	public BlogCache(string[] pathToCache, bool preload = false) {
+	private readonly ILogger<BlogCache> logger;
+	private readonly Cache<Blog> cache;
+
+	public BlogCache(ILogger<BlogCache> blogCacheLogger, ILogger<Cache<Blog>> cacheLogger, string[] pathToCache) {
 		// Get the system path to our folder
 		string globalPath = AppDomain.CurrentDomain.BaseDirectory;
 		foreach(string path in pathToCache) {
 			globalPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 		}
 		systemPath = globalPath;
-		this.preload = preload;
-
-		CacheBlogs();
-	}
-
-	public void CacheBlogs() {
-		CacheBlogsAsync().GetAwaiter().GetResult();
-	}
-
-
-	public async Task CacheBlogsAsync(CancellationToken cancellationToken = default) {
-		DateTime start = DateTime.Now;
 
 		foreach(string path in Directory.GetFiles(systemPath, "*.md", SearchOption.AllDirectories)) {
 			Blog blog = new(path);
-			if(!blog.IsValid) {
-				continue;
-			}
-			if(blogs.ContainsKey(blog.Url)) {
-				Console.WriteLine($"(OBS!) Blog collision @ {path}");
-				continue;
-			}
-
-			if(preload) {
-				await blog.LoadAsync(cancellationToken);
-			}
-
-			blogs.Add(blog.Url, blog);
-			Console.WriteLine($"Added {blog.Name}");
+			blogsPath.Add(blog.Url, blog.ContentPath);
 		}
 
-		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-		Console.WriteLine($"Cached all blogs [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
-	}
-
-
-	public void CacheBlog(Blog blog) {
-		CacheBlogAsync(blog).GetAwaiter().GetResult();
+		logger = blogCacheLogger;
+		cache = new Cache<Blog>(Program.CacheDuration, cacheLogger);
 	}
 
 	public async Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default) {
-		DateTime start = DateTime.Now;
-
-		if(blogs.ContainsKey(blog.Url)) {
-			Console.WriteLine($"(OBS!) Blog collision @ {blog.ContentPath}");
+		if(!blog.HasMeta) {
+			await blog.LoadMetaAsync(cancellationToken);
+		}
+		if(blogsPath.ContainsKey(blog.Url)) {
+			logger.LogError($"(OBS!) Blog collision @ {blog.ContentPath}");
 			return;
 		}
-
-		if(preload) {
-			await blog.LoadAsync(cancellationToken);
+		else {
+			blogsPath.Add(blog.Url, blog.ContentPath);
 		}
 
-		blogs.Add(blog.Url, blog);
-
-		string preloadPrompt = preload ? "Preloaded" : "Not Preloaded";
-		byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-		Console.WriteLine($"Cached {blog.Name}  [{preloadPrompt}] in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
+		cache.Add(blog.Url, blog);
 	}
 
 
-
-	public Blog[] GetAllBlogs() {
-		return blogs.Values
-			.OrderByDescending(b => b.CreatedAt).ToArray();
-	}
-
-	public BlogForRendering[] GetAllBlogsForRendering() {
-		return blogs.Values
-			.OrderByDescending(b => b.CreatedAt)
-			.Aggregate(new List<BlogForRendering>(), (list, b) => {
-				list.Add(new BlogForRendering(b));
-				return list;
-			}).ToArray();
-	}
-
-
-	public Blog? GetBlog(string url, bool forceLoad = true) {
-		return GetBlogAsync(url, forceLoad).GetAwaiter().GetResult();
-	}
-
-	public async Task<Blog?> GetBlogAsync(string url, bool forceLoad = true, CancellationToken cancellationToken = default) {
-		if(blogs.TryGetValue(url, out Blog? blog) && blog != null) {
-			if(blog.IsLoaded) {
-				return blog;
+	public async Task<List<Blog>> GetAllBlogsAsync(bool load = false, CancellationToken cancellationToken = default) {
+		List<Blog> list = [];
+		foreach(string key in blogsPath.Keys) {
+			Blog? blog = await GetBlogAsync(key, load, cancellationToken);
+			if(blog == null) {
+				continue;
 			}
-
-			if(forceLoad) {
-				DateTime start = DateTime.Now;
-				await blog.LoadAsync(cancellationToken);
-				byte[] bytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(blogs));
-				Console.WriteLine($"Cached {blog.Name} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms [{Helper.FormatStorageSize(bytes.LongLength)}]");
-			}
-
-			return blog;
+			list.Add(blog);
 		}
-		return null;
+
+		return list.OrderByDescending(b => b.CreatedAt).ToList();
 	}
 
+	public async Task<List<BlogForRendering>> GetAllBlogsForRenderingAsync(CancellationToken cancellationToken = default) {
+		return (await GetAllBlogsAsync(false, cancellationToken)).ConvertAll(b => new BlogForRendering(b));
+	}
+
+
+	public Blog? GetBlog(string url, bool load = false) {
+		return GetBlogAsync(url, load).GetAwaiter().GetResult();
+	}
+
+	public async Task<Blog?> GetBlogAsync(string url, bool load = false, CancellationToken cancellationToken = default) {
+		DateTime start = DateTime.Now;
+
+		Blog? blog = cache.Get(url);
+		// We have not cached
+		if(blog == null) {
+			if(blogsPath.TryGetValue(url, out string? path) && path != null) {
+				blog = new(path);
+				if(!await blog.LoadMetaAsync(cancellationToken)) {
+					logger.LogError($"Could not load meta for {url}");
+					return null;
+				}
+				cache.Add(url, blog);
+			}
+			else {
+				logger.LogError($"Missing path to {url}");
+			}
+		}
+
+		if(blog == null) {
+			logger.LogError($"Could not get view {url} after cacheing");
+		}
+		else {
+			if(!blog.IsLoaded && load) {
+				await blog.LoadContentAsync();
+			}
+
+			logger.LogInformation($"Cached {blog.Name}/{blog.Url} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms");
+		}
+
+		return blog;
+	}
+
+	public async ValueTask DisposeAsync() {
+		await cache.DisposeAsync();
+	}
 }

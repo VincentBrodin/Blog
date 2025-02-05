@@ -1,8 +1,8 @@
 ﻿using BlogVb.Api.Models.Accounts;
 using BlogVb.Api.Models.Blogs;
 using BlogVb.Api.Services;
+using BlogVb.Api.Tools;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 
 namespace BlogVb.Api.Controllers;
 [ApiController]
@@ -22,12 +22,12 @@ public class AdminController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
 		}
 
-		Blog? blog = await blogCache.GetBlogAsync(blogUrl);
+		Blog? blog = await blogCache.GetBlogAsync(blogUrl, true);
 		if(blog == null) {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}
 		EditBlog editBlog = new(blog);
-		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: editBlog), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: new {blog = editBlog}), Accepts.Html);
 	}
 
 	[HttpPost]

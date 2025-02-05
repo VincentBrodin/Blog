@@ -24,7 +24,7 @@ public class ComponentsController : ControllerBase {
 	[HttpGet]
 	[Route("blogs")]
 	public async Task<IActionResult> GetBlogsAsync(IViewCache viewCache, IBlogCache blogCache) {
-		string[] blogs = blogCache.GetAllBlogs().Select(b => b.Name).ToArray();
+		string[] blogs = (await blogCache.GetAllBlogsAsync()).Select(b => b.Name).ToArray();
 		string renderedHtml = Handlebars.Compile(await viewCache.GetViewAsync("components/datalist"))(new { items = blogs });
 		return Content(renderedHtml, Accepts.Html);
 	}
@@ -33,7 +33,7 @@ public class ComponentsController : ControllerBase {
 	[Route("mdtohtml")]
 	public IActionResult PostMdToHtml([FromForm] string content) {
 		MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
-			.UseAutoIdentifiers() 
+			.UseAutoIdentifiers()
 			.Build();
 		return Content(Markdown.ToHtml(content, pipeline), Accepts.Html);
 	}

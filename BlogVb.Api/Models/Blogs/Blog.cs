@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using BlogVb.Api.Tools;
+using System.Text.Json;
 using System.Web;
 
 namespace BlogVb.Api.Models.Blogs;
@@ -21,42 +22,17 @@ public class Blog {
 	public string ContentPath { get; init; } = string.Empty;
 	public string MetaPath { get; init; } = string.Empty;
 
-	public bool IsValid { get; }
+	public bool HasMeta { get; private set; }
 	public bool IsLoaded { get; private set; }
 
 
 	public Blog(string contentPath) {
 		ContentPath = contentPath;
 		MetaPath = contentPath + ".json";
-
-		if(!File.Exists(ContentPath) || !File.Exists(MetaPath)) {
-			Console.WriteLine($"Could create blog {contentPath} beacuse a path is missing.");
-			return;
-		}
-
-		try {
-			MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(File.ReadAllText(MetaPath));
-			if(binding == null) {
-				Console.WriteLine($"Problem loading meta data: Could not parse json");
-				return;
-			}
-			Name = binding.Name;
-			Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(Name));
-			Description = binding.Description;
-			Author = binding.Author;
-			HeaderName = binding.HeaderName;
-			CreatedAt = binding.CreatedAt;
-			LastChangeAt = binding.LastChangeAt;
-			ReadTimeMin = binding.ReadTimeMin;
-			ReadTimeSec = binding.ReadTimeSec;
-		}
-		catch(Exception exception) {
-			Console.WriteLine($"Problem loading meta data: {exception.Message}");
-			return;
-		}
-
-		IsValid = true;
+		string fileName = Path.GetFileNameWithoutExtension(ContentPath);
+		Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(fileName));
 	}
+
 
 	#region Generate New Blog
 	public static Blog GenerateNewBlog(CreateBlog createBlog) {
@@ -94,23 +70,22 @@ public class Blog {
 		await File.WriteAllTextAsync(metaPath, bindingsJson, cancellationToken);
 
 		// Makes sure that we don't need to load the blog twice saves us some compute :)
-		return new Blog(contentPath) {
-			Content = createBlog.Content,
-			IsLoaded = true
-		};
+		Blog blog = new(contentPath);
+		await blog.LoadMetaAsync(cancellationToken);
+		return blog;
 	}
 	#endregion
 
 	#region Load
-	public void Load() {
-		LoadAsync().GetAwaiter().GetResult();
+	public void LoadContent() {
+		LoadContentAsync().GetAwaiter().GetResult();
 	}
 
-	public async Task LoadAsync(CancellationToken cancellationToken = default) {
+	public async Task LoadContentAsync(CancellationToken cancellationToken = default) {
 		if(IsLoaded) {
 			return;
 		}
-		if(!IsValid) {
+		if(!HasMeta) {
 			Console.WriteLine("Blog is not valid can't load");
 		}
 
@@ -122,6 +97,37 @@ public class Blog {
 			Console.WriteLine($"Could not load blog {ContentPath} beacuse", exception.Message);
 		}
 	}
+
+	public async Task<bool> LoadMetaAsync(CancellationToken cancellationToken = default) {
+		if(HasMeta) {
+			return true;
+		}
+		if(!File.Exists(ContentPath) || !File.Exists(MetaPath)) {
+			return false;
+		}
+
+		try {
+			MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(await File.ReadAllTextAsync(MetaPath, cancellationToken));
+			if(binding == null) {
+				return false;
+			}
+			Name = binding.Name;
+			Description = binding.Description;
+			Author = binding.Author;
+			HeaderName = binding.HeaderName;
+			CreatedAt = binding.CreatedAt;
+			LastChangeAt = binding.LastChangeAt;
+			ReadTimeMin = binding.ReadTimeMin;
+			ReadTimeSec = binding.ReadTimeSec;
+		}
+		catch(Exception exception) {
+			Console.WriteLine($"Problem loading meta data: {exception.Message}");
+			return false;
+		}
+		HasMeta = true;
+		return true;
+	}
+
 	#endregion
 
 	public async Task UpdateAsync(EditBlog editBlog, CancellationToken cancellationToken = default) {
@@ -162,5 +168,8 @@ public class Blog {
 		LastChangeAt = binding.LastChangeAt;
 		ReadTimeMin = binding.ReadTimeMin;
 		ReadTimeSec = binding.ReadTimeSec;
+
+		IsLoaded = true;
+		HasMeta = true;
 	}
 }
