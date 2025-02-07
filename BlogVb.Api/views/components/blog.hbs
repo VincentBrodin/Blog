@@ -20,10 +20,10 @@
         <div class="card-actions justify-end">
             {{#if account}}
                 {{#role account.role }}
-                <a class="btn btn-primary mr-5" href="admin/edit/{{blog.url}}">Edit</a>
+                <a class="btn btn-primary mr-5" href="/admin/edit/{{blog.url}}">Edit</a>
                 {{/role}}
             {{/if}}
-            <a class="btn btn-primary" href="/{{blog.url}}">Read More</a>
+            <a class="btn btn-primary" href="/blog/{{blog.url}}">Read More</a>
         </div>
     </div>
 </div>

@@ -8,6 +8,7 @@ public interface IBlogCache {
 	Task<Blog?> GetBlogAsync(string url, bool load = false, CancellationToken cancellationToken = default);
 	Task<List<Blog>> GetAllBlogsAsync(bool load = false, CancellationToken cancellationToken = default);
 	Task<List<BlogForRendering>> GetAllBlogsForRenderingAsync(CancellationToken cancellationToken = default);
+	Task<List<BlogForRendering>> RangeBlogsForRenderingAsync(int start, int end, CancellationToken cancellationToken = default);
 	Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default);
 
 }
@@ -68,6 +69,19 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 	public async Task<List<BlogForRendering>> GetAllBlogsForRenderingAsync(CancellationToken cancellationToken = default) {
 		return (await GetAllBlogsAsync(false, cancellationToken)).ConvertAll(b => new BlogForRendering(b));
 	}
+	public async Task<List<BlogForRendering>> RangeBlogsForRenderingAsync(int start, int end, CancellationToken cancellationToken = default) {
+		List<Blog> blogs = await GetAllBlogsAsync(false, cancellationToken);
+		if(end > blogs.Count) {
+			end = blogs.Count;
+		}
+
+		List<BlogForRendering> list = [];
+		for(int i = start; i < end; i++) {
+			list.Add(new BlogForRendering(blogs[i]));
+		}
+		return list;
+	}
+
 
 
 	public Blog? GetBlog(string url, bool load = false) {

@@ -1,0 +1,18 @@
+﻿<form method="post" action="/account" enctype="multipart/form-data" class="container flex flex-col grow mx-auto p-8 justify-center">
+    <h1 class="text-4xl mb-8">Hi {{account.username}}</h1>
+    <div class="flex flex-row items-start gap-4 mb-4">
+        <div class="flex flex-col w-full">
+            <label for="username" class="font-semibold mb-2">Username:</label>
+            <input value="{{account.username}}" type="text" id="username" name="username" placeholder="Enter Username" required class="input input-bordered w-full">
+        </div>
+        <div class="flex flex-col w-full">
+            <label for="email" class="font-semibold mb-2">Email:</label>
+            <input value="{{account.email}}" type="email" id="email" name="email" placeholder="Enter Email" required class="input input-bordered w-full" />
+        </div>
+        <div class="flex flex-col justify-center h-full">
+            <label for="tags" class="font-semibold mb-2 opacity-0">Center</label>
+            <button type="submit" class="btn btn-primary">Update</button>
+        </div>
+
+    </div>
+</form>

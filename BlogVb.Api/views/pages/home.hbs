@@ -1,7 +1,30 @@
-﻿<div class="grow">
+﻿<div id="target" class="grow flex flex-col justify-between items-center ">
     <div class="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 grid-cols-1 gap-6 mx-auto p-8">
         {{#each blogs}}
         {{>blog blog=. account=../account}}
         {{/each}}
+    </div>
+    <div class="join mb-5">
+        <button class="join-item btn"
+                hx-post="/?page={{prev}}"
+                hx-trigger="click"
+                hx-target="#target"
+                hx-push-url="true"
+                hx-swap="outerHTML"
+                hx-disabled-elt="this">
+            «
+        </button>
+
+        <button class="join-item btn">Page {{page}}</button>
+
+        <button class="join-item btn"
+                hx-post="/?page={{next}}"
+                hx-trigger="click"
+                hx-target="#target"
+                hx-push-url="true"
+                hx-swap="outerHTML"
+                hx-disabled-elt="this">
+            »
+        </button>
     </div>
 </div>
