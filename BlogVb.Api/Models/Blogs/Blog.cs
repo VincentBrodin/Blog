@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using BlogVb.Api.Tools;
+using System.Text.Json;
 using System.Web;
 
 namespace BlogVb.Api.Models.Blogs;
@@ -21,96 +22,70 @@ public class Blog {
 	public string ContentPath { get; init; } = string.Empty;
 	public string MetaPath { get; init; } = string.Empty;
 
-	public bool IsValid { get; }
+	public bool HasMeta { get; private set; }
 	public bool IsLoaded { get; private set; }
 
 
 	public Blog(string contentPath) {
 		ContentPath = contentPath;
 		MetaPath = contentPath + ".json";
-
-		if(!File.Exists(ContentPath) || !File.Exists(MetaPath)) {
-			Console.WriteLine($"Could create blog {contentPath} beacuse a path is missing.");
-			return;
-		}
-
-		try {
-			MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(File.ReadAllText(MetaPath));
-			if(binding == null) {
-				Console.WriteLine($"Problem loading meta data: Could not parse json");
-				return;
-			}
-			Name = binding.Name;
-			Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(Name));
-			Description = binding.Description;
-			Author = binding.Author;
-			HeaderName = binding.HeaderName;
-			CreatedAt = binding.CreatedAt;
-			LastChangeAt = binding.LastChangeAt;
-			ReadTimeMin = binding.ReadTimeMin;
-			ReadTimeSec = binding.ReadTimeSec;
-		}
-		catch(Exception exception) {
-			Console.WriteLine($"Problem loading meta data: {exception.Message}");
-			return;
-		}
-
-		IsValid = true;
+		string fileName = Path.GetFileNameWithoutExtension(ContentPath);
+		Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(fileName));
 	}
+
 
 	#region Generate New Blog
-	public static Blog GenerateNewBlog(BlogFromPost blogFromPost) {
-		return GenerateNewBlogAsync(blogFromPost).GetAwaiter().GetResult();
+	public static Blog GenerateNewBlog(CreateBlog createBlog) {
+		return GenerateNewBlogAsync(createBlog).GetAwaiter().GetResult();
 	}
 
-	public static async Task<Blog> GenerateNewBlogAsync(BlogFromPost blogFromPost, string author = "John Doe", CancellationToken cancellationToken = default) {
-		string safeName = Helper.MakeFileSafe(blogFromPost.Name);
+	public static async Task<Blog> GenerateNewBlogAsync(CreateBlog createBlog, string author = "John Doe", CancellationToken cancellationToken = default) {
+		string safeName = Helper.MakeFileSafe(createBlog.Name);
 
 		string contentName = safeName + ".md";
 		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", contentName);
 		string metaPath = contentPath + ".json";
 
-		await File.WriteAllTextAsync(contentPath, blogFromPost.Content, cancellationToken);
+		await File.WriteAllTextAsync(contentPath, createBlog.Content, cancellationToken);
 
-		MetaBlogBinding bindings = new(blogFromPost) {
+		MetaBlogBinding binding = new(createBlog) {
 			Author = author,
 			CreatedAt = DateTime.Now,
 			LastChangeAt = DateTime.Now,
 		};
 
 		// Write image to disk and add section to meta
-		if(blogFromPost.Header != null) {
-			string imageName = safeName + Path.GetExtension(blogFromPost.Header.FileName);
+		if(createBlog.Header != null) {
+			string imageName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
 			string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", imageName);
 			Console.WriteLine(imagePath);
 
-			bindings.HeaderName = imageName;
+			binding.HeaderName = imageName;
 
 			await using Stream fileStream = new FileStream(imagePath, FileMode.Create);
-			await blogFromPost.Header.CopyToAsync(fileStream, cancellationToken);
+			await createBlog.Header.CopyToAsync(fileStream, cancellationToken);
 		}
 
-		string bindingsJson = JsonSerializer.Serialize(bindings);
+		string bindingsJson = JsonSerializer.Serialize(binding);
 		await File.WriteAllTextAsync(metaPath, bindingsJson, cancellationToken);
 
 		// Makes sure that we don't need to load the blog twice saves us some compute :)
-		return new Blog(contentPath) {
-			Content = blogFromPost.Content,
-			IsLoaded = true
-		};
+		Blog blog = new(contentPath);
+		await blog.LoadMetaAsync(cancellationToken);
+		return blog;
 	}
 	#endregion
 
 	#region Load
-	public void Load() {
-		LoadAsync().GetAwaiter().GetResult();
+	public void LoadContent() {
+		LoadContentAsync().GetAwaiter().GetResult();
 	}
 
-	public async Task LoadAsync(CancellationToken cancellationToken = default) {
+	public async Task LoadContentAsync(CancellationToken cancellationToken = default) {
 		if(IsLoaded) {
 			return;
 		}
-		if(!IsValid) {
+		if(!HasMeta) {
 			Console.WriteLine("Blog is not valid can't load");
 		}
 
@@ -122,9 +97,79 @@ public class Blog {
 			Console.WriteLine($"Could not load blog {ContentPath} beacuse", exception.Message);
 		}
 	}
+
+	public async Task<bool> LoadMetaAsync(CancellationToken cancellationToken = default) {
+		if(HasMeta) {
+			return true;
+		}
+		if(!File.Exists(ContentPath) || !File.Exists(MetaPath)) {
+			return false;
+		}
+
+		try {
+			MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(await File.ReadAllTextAsync(MetaPath, cancellationToken));
+			if(binding == null) {
+				return false;
+			}
+			Name = binding.Name;
+			Description = binding.Description;
+			Author = binding.Author;
+			HeaderName = binding.HeaderName;
+			CreatedAt = binding.CreatedAt;
+			LastChangeAt = binding.LastChangeAt;
+			ReadTimeMin = binding.ReadTimeMin;
+			ReadTimeSec = binding.ReadTimeSec;
+		}
+		catch(Exception exception) {
+			Console.WriteLine($"Problem loading meta data: {exception.Message}");
+			return false;
+		}
+		HasMeta = true;
+		return true;
+	}
+
 	#endregion
 
-	public void Update() {
+	public async Task UpdateAsync(EditBlog editBlog, CancellationToken cancellationToken = default) {
+		await File.WriteAllTextAsync(ContentPath, editBlog.Content, cancellationToken);
 
+		MetaBlogBinding? binding = JsonSerializer.Deserialize<MetaBlogBinding>(File.ReadAllText(MetaPath));
+
+		if(binding == null) {
+			Console.WriteLine($"Problem loading meta data: Could not parse json");
+			return;
+		}
+
+		binding.Name = editBlog.Name;
+		binding.Description = editBlog.Description;
+		binding.LastChangeAt = DateTime.Now;
+		(binding.ReadTimeMin, binding.ReadTimeSec) = Helper.CalculateReadTime(editBlog.Content);
+
+		if(editBlog.Header != null) {
+			string oldImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			if(File.Exists(oldImagePath)) {
+				File.Delete(oldImagePath);
+			}
+
+			binding.HeaderName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
+
+			string newImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			await using Stream fileStream = new FileStream(newImagePath, FileMode.Create);
+			await editBlog.Header.CopyToAsync(fileStream, cancellationToken);
+		}
+
+		string bindingsJson = JsonSerializer.Serialize(binding);
+		await File.WriteAllTextAsync(MetaPath, bindingsJson, cancellationToken);
+
+		Name = binding.Name;
+		Description = binding.Description;
+		HeaderName = binding.HeaderName;
+		Content = editBlog.Content;
+		LastChangeAt = binding.LastChangeAt;
+		ReadTimeMin = binding.ReadTimeMin;
+		ReadTimeSec = binding.ReadTimeSec;
+
+		IsLoaded = true;
+		HasMeta = true;
 	}
 }

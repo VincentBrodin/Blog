@@ -1,5 +1,6 @@
 ﻿using BlogVb.Api.Models.Accounts;
 using BlogVb.Api.Services;
+using BlogVb.Api.Tools;
 using HandlebarsDotNet;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,12 +8,33 @@ namespace BlogVb.Api.Controllers;
 [Route("[controller]")]
 [ApiController]
 public class AccountController : ControllerBase {
+
+	private readonly ILogger<AccountController> logger;
+
+	public AccountController(ILogger<AccountController> logger) {
+		this.logger = logger;
+	}
+
+	[HttpGet]
+	public async Task<IActionResult> Get(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
+		cookieVault.Set(HttpContext, "came-from", $"/account");
+		Account? account = cookieVault.Get<Account>(HttpContext, "user");
+		if(account == null) {
+			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Redirect("/account/login");
+		}
+		else if(account.Role == 0) {
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
+		}
+
+		return Content(await layoutRenderer.RenderAsync("pages/account"), Accepts.Html);
+	}
+
 	[HttpGet]
 	[Route("login")]
 	public async Task<IActionResult> GetLogin(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account != null) {
-			Console.WriteLine("Logged in");
 			string? cameFrom = cookieVault.Get<string>(HttpContext, "came-from");
 			if(cameFrom == null) {
 				Response.Headers.Append("HX-Redirect", "/");
@@ -50,6 +72,7 @@ public class AccountController : ControllerBase {
 				password = loginAccount.Password,
 				invalid = true
 			});
+			logger.LogInformation("User failed to login");
 			return Content(renderedHtml, Accepts.Html);
 		}
 		else {
@@ -62,6 +85,8 @@ public class AccountController : ControllerBase {
 			else {
 				Response.Headers.Append("HX-Redirect", cameFrom);
 			}
+
+			logger.LogInformation($"User {account.Id} logged in");
 			return Ok();
 		}
 	}
@@ -114,6 +139,7 @@ public class AccountController : ControllerBase {
 			else {
 				Response.Headers.Append("HX-Redirect", cameFrom);
 			}
+			logger.LogInformation($"User {account.Id} created an account");
 			return Ok();
 		}
 		else {
@@ -127,6 +153,7 @@ public class AccountController : ControllerBase {
 	public IActionResult GetLogout(ICookieVault cookieVault) {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account != null) {
+			logger.LogInformation($"User {account.Id} logged out");
 			cookieVault.Remove(HttpContext, "user");
 		}
 

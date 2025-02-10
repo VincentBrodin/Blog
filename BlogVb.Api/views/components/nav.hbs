@@ -1,30 +1,21 @@
-﻿<div class="navbar bg-base-100">
+﻿<div class="navbar backdrop-blur border-b-4 border-base-200 border-dashed sticky top-0 left-0 right-0" style="z-index: 10;">
     <div class="flex-1">
         <a class="btn btn-ghost text-xl" href="/">vincent_brodin</a>
     </div>
     <div class="flex-none gap-2">
-        <!--<div class="form-control">
-            <input hx-trigger="click once"
-                   hx-get="/components/blogs/"
-                   hx-target="#blogs"
-                   hx-swap="innerHTML"
-                   list="blogs"
-                   type="text"
-                   placeholder="Search"
-                   class="input input-bordered w-24 md:w-auto" />
-            <datalist id="blogs">
-            </datalist>
-        </div>-->
+        <label class="swap swap-rotate">
+            <input id="dark-mode" type="checkbox" />
+            <i class="bi bi-sun swap-on text-xl"></i>
+            <i class="bi bi-moon-stars swap-off text-xl"></i>
+        </label>
+
         {{#if account}}
         <div class="dropdown dropdown-end">
-            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-                <div class="w-10 rounded-full">
-                    <img alt="Tailwind CSS Navbar component"
-                         src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp" />
-                </div>
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle">
+                <i class="bi bi-person-circle text-xl"></i>
             </div>
             <ul tabindex="0"
-                class="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
+                class="menu menu-sm dropdown-content bg-base-200 rounded-box z-[1] mt-3 w-52 p-2 shadow">
                 <li>
                     <a class="justify-between">
                         Profile
@@ -41,3 +32,27 @@
         {{/if}}
     </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const darkMode = document.getElementById("dark-mode");
+        const html = document.querySelector("html");
+
+        // Load the saved preference from localStorage
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme) {
+            html.setAttribute("data-theme", savedTheme);
+            darkMode.checked = savedTheme === "light";
+        }
+
+        darkMode.addEventListener("input", () => {
+            if (darkMode.checked) {
+                html.setAttribute("data-theme", "light");
+                localStorage.setItem("theme", "light");
+            } else {
+                html.setAttribute("data-theme", "dark");
+                localStorage.setItem("theme", "dark");
+            }
+        });
+    });
+</script>
