@@ -27,7 +27,7 @@ public class HomeController : ControllerBase {
 		List<BlogForRendering> blogs = await blogCache.RangeBlogsForRenderingAsync(start, end);
 		Console.WriteLine(blogs.Count);
 
-		return Content(await layoutRenderer.RenderAsync("pages/home", bodyData: new { blogs, page, next, prev }), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/home", new { title = "[vinbro]" }, new { blogs, page, next, prev }), Accepts.Html);
 	}
 
 	[HttpPost]
@@ -62,7 +62,7 @@ public class HomeController : ControllerBase {
 			MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
 				.UseAutoIdentifiers()
 				.Build();
-			return Content(await layoutRenderer.RenderAsync("pages/blog", bodyData: new { content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
+			return Content(await layoutRenderer.RenderAsync("pages/blog", new { title = $"{blog.Name} - [vinbro]" }, new { content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
 		}
 	}
 

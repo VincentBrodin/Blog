@@ -27,7 +27,7 @@ public class AdminController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}
 		EditBlog editBlog = new(blog);
-		return Content(await layoutRenderer.RenderAsync("pages/edit", bodyData: new { blog = editBlog }), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/edit", new { title="Edit blog - [vinbro]" },  new { blog = editBlog }), Accepts.Html);
 	}
 
 	[HttpPost]
@@ -69,7 +69,7 @@ public class AdminController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
 		}
 
-		return Content(await layoutRenderer.RenderAsync("pages/create", new { account }), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/create", new { account, title = "New blog - [vinbro]" }), Accepts.Html);
 	}
 
 	[HttpPost]

@@ -27,7 +27,7 @@ public class AccountController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
 		}
 
-		return Content(await layoutRenderer.RenderAsync("pages/account"), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/account", new { title = $"{account.Username} - [vinbro]" }), Accepts.Html);
 	}
 
 	[HttpGet]
@@ -46,7 +46,7 @@ public class AccountController : ControllerBase {
 			}
 		}
 
-		return Content(await layoutRenderer.RenderAsync("pages/login"), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/login", new { title = "Login - [vinbro]" }), Accepts.Html);
 	}
 
 	[HttpPost]
@@ -108,7 +108,7 @@ public class AccountController : ControllerBase {
 				return Redirect(cameFrom);
 			}
 		}
-		return Content(await layoutRenderer.RenderAsync("pages/register"), Accepts.Html);
+		return Content(await layoutRenderer.RenderAsync("pages/register", new { title = "Register - [vinbro]" }), Accepts.Html);
 	}
 
 	[HttpPost]
@@ -132,6 +132,8 @@ public class AccountController : ControllerBase {
 		if(validate == null) {
 			Account account = createAccount.GetAccount();
 			await accountService.Add(account);
+			cookieVault.Set(HttpContext, "user", account);
+
 			string? cameFrom = cookieVault.Get<string>(HttpContext, "came-from");
 			if(cameFrom == null) {
 				Response.Headers.Append("HX-Redirect", "/");
@@ -139,6 +141,7 @@ public class AccountController : ControllerBase {
 			else {
 				Response.Headers.Append("HX-Redirect", cameFrom);
 			}
+
 			logger.LogInformation($"User {account.Id} created an account");
 			return Ok();
 		}

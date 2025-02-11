@@ -5,11 +5,6 @@ module.exports = {
         './views/**/*.hbs'
     ],
     theme: {
-        extend: {
-            fontFamily: {
-                sans: ['InterVariable', '...defaultTheme.fontFamily.sans'],
-            },
-        },
     },
     plugins: [
         require('@tailwindcss/typography'),

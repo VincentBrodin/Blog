@@ -89,11 +89,11 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 	}
 
 	public async Task<Blog?> GetBlogAsync(string url, bool load = false, CancellationToken cancellationToken = default) {
-		DateTime start = DateTime.Now;
 
 		Blog? blog = cache.Get(url);
 		// We have not cached
 		if(blog == null) {
+			DateTime start = DateTime.Now;
 			if(blogsPath.TryGetValue(url, out string? path) && path != null) {
 				blog = new(path);
 				if(!await blog.LoadMetaAsync(cancellationToken)) {
@@ -105,20 +105,23 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 			else {
 				logger.LogError($"Missing path to {url}");
 			}
-		}
 
+			if(blog == null) {
+				logger.LogError($"Could not get view {url} after cacheing");
+			}
+			else {
+
+				logger.LogInformation($"Cached {blog.Name}/{blog.Url} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms");
+			}
+		}
 		if(blog == null) {
 			logger.LogError($"Could not get view {url} after cacheing");
 		}
-		else {
-			if(!blog.IsLoaded && load) {
-				await blog.LoadContentAsync();
-			}
-
-			logger.LogInformation($"Cached {blog.Name}/{blog.Url} in {DateTime.Now.Subtract(start).TotalMilliseconds}ms");
+		else if(!blog.IsLoaded && load) {
+			await blog.LoadContentAsync(cancellationToken);
 		}
-
 		return blog;
+
 	}
 
 	public async ValueTask DisposeAsync() {

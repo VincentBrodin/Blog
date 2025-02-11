@@ -37,7 +37,7 @@ public class CreateAccount {
 		if(string.IsNullOrEmpty(Email) || !Helper.IsValidEmail(Email)) {
 			emailValid = "Not a valid email";
 		}
-		else if(accountExists) {
+		else if(!accountExists) {
 			emailValid = "Account with email already exists";
 		}
 
