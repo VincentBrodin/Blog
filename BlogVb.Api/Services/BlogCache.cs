@@ -25,6 +25,9 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 		string globalPath = AppDomain.CurrentDomain.BaseDirectory;
 		foreach(string path in pathToCache) {
 			globalPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+			if(!Directory.Exists(globalPath)) {
+				Directory.CreateDirectory(globalPath);
+			}
 		}
 		systemPath = globalPath;
 

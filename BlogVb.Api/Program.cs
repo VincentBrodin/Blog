@@ -21,6 +21,7 @@ namespace BlogVb.Api {
 			builder.Services.AddControllers();
 			builder.Services.AddHttpContextAccessor();
 
+			Console.WriteLine(builder.Configuration["ConnectionStrings:SQLiteDefualt"]);
 			builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration["ConnectionStrings:SQLiteDefualt"]));
 
 			builder.Services.AddSingleton<IViewCache>(sp => {

@@ -23,8 +23,8 @@ public class AccountService : IAccountService {
 		await _context.SaveChangesAsync();
 	}
 
-	public Task<Account?> GetById(Guid id) {
-		throw new NotImplementedException();
+	public async Task<Account?> GetById(Guid id) {
+		return await _context.Accounts.FirstOrDefaultAsync(x => x.Id == id);
 	}
 	public async Task<Account?> GetByEmail(string email) {
 		return await _context.Accounts.AsNoTracking().FirstOrDefaultAsync(a => a.Email == email);
@@ -35,7 +35,8 @@ public class AccountService : IAccountService {
 	}
 
 
-	public Task Update(Account account) {
-		throw new NotImplementedException();
+	public async Task Update(Account account) {
+		_context.Update(account);
+		await _context.SaveChangesAsync();
 	}
 }

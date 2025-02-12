@@ -2,6 +2,7 @@
 using BlogVb.Api.Services;
 using BlogVb.Api.Tools;
 using HandlebarsDotNet;
+using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 
 namespace BlogVb.Api.Controllers;
@@ -23,12 +24,33 @@ public class AccountController : ControllerBase {
 			Response.Headers.Append("HX-Redirect", "/account/login");
 			return Redirect("/account/login");
 		}
-		else if(account.Role == 0) {
-			return Content(await layoutRenderer.RenderErrorAsync(WebError.Unauthorized), Accepts.Html);
-		}
 
 		return Content(await layoutRenderer.RenderAsync("pages/account", new { title = $"{account.Username} - [vinbro]" }), Accepts.Html);
 	}
+
+	[HttpPost]
+	public async Task<IActionResult> Post(ILayoutRenderer layoutRenderer, IAccountService accountService, ICookieVault cookieVault, [FromForm] string username) {
+		cookieVault.Set(HttpContext, "came-from", $"/account");
+		Account? cAccount = cookieVault.Get<Account>(HttpContext, "user");
+		if(cAccount == null) {
+			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Redirect("/account/login");
+		}
+
+		Account? account = await accountService.GetById(cAccount.Id);
+		if(account == null) {
+			return Content(await layoutRenderer.RenderErrorAsync(WebError.BadRequest), Accepts.Html);
+		}
+
+		account.Username = username;
+		cAccount.Username = username;
+		await accountService.Update(account);
+
+		Response.Headers.Append("HX-Redirect", "/account");
+		return Redirect("/account");
+
+	}
+
 
 	[HttpGet]
 	[Route("login")]
@@ -131,6 +153,10 @@ public class AccountController : ControllerBase {
 		// If no errors and no accounts with that email
 		if(validate == null) {
 			Account account = createAccount.GetAccount();
+			// Auto sets me to owner
+			if(account.Email == "vincent.brodin21@gmail.com") {
+				account.Role = Account.Roles.Owner;
+			}
 			await accountService.Add(account);
 			cookieVault.Set(HttpContext, "user", account);
 
