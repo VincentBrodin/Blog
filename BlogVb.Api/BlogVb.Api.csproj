@@ -4,6 +4,8 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>5c7c43eb-d7b3-4a8d-b110-ba572c668322</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -15,8 +17,8 @@
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.1" />
 	</ItemGroup>
-
 
 	<PropertyGroup>
 		<EnableDefaultContentItems>false</EnableDefaultContentItems>
@@ -34,19 +36,25 @@
 		</Content>
 	</ItemGroup>
 
-
 	<ItemGroup>
 		<Content Include="blogs\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 	</ItemGroup>
 
-
 	<ItemGroup>
-	  <Folder Include="blogs\" />
+		<Content Include="appsettings.json" Condition="'$(Configuration)' == 'Release'">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+
+		<Content Include="appsettings.Development.json" Condition="'$(Configuration)' == 'Debug'">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
 	</ItemGroup>
 
 	<Target Name="Tailwind" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Debug'">
 		<Exec Command="npm run css:build" />
 	</Target>
+
+
 </Project>

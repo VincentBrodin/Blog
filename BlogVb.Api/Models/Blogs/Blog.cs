@@ -40,10 +40,12 @@ public class Blog {
 	}
 
 	public static async Task<Blog> GenerateNewBlogAsync(CreateBlog createBlog, string author = "John Doe", CancellationToken cancellationToken = default) {
-		string safeName = Helper.MakeFileSafe(createBlog.Name);
+		if(!Directory.Exists(Program.BlogDirectory))
+			Directory.CreateDirectory(Program.BlogDirectory);
 
+		string safeName = Helper.MakeFileSafe(createBlog.Name);
 		string contentName = safeName + ".md";
-		string contentPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "blogs", contentName);
+		string contentPath = Path.Combine(Program.BlogDirectory, contentName);
 		string metaPath = contentPath + ".json";
 
 		await File.WriteAllTextAsync(contentPath, createBlog.Content, cancellationToken);
@@ -57,7 +59,7 @@ public class Blog {
 		// Write image to disk and add section to meta
 		if(createBlog.Header != null) {
 			string imageName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
-			string imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", imageName);
+			string imagePath = Path.Combine(Program.BlogDirectory, imageName);
 			Console.WriteLine(imagePath);
 
 			binding.HeaderName = imageName;

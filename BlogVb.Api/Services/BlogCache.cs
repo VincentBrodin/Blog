@@ -20,24 +20,20 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 	private readonly ILogger<BlogCache> logger;
 	private readonly Cache<Blog> cache;
 
-	public BlogCache(ILogger<BlogCache> blogCacheLogger, ILogger<Cache<Blog>> cacheLogger, string[] pathToCache) {
+	public BlogCache(ILogger<BlogCache> blogCacheLogger, ILogger<Cache<Blog>> cacheLogger, string systemPath) {
+		logger = blogCacheLogger;
+		cache = new Cache<Blog>(Program.CacheDuration, cacheLogger);
+
 		// Get the system path to our folder
-		string globalPath = AppDomain.CurrentDomain.BaseDirectory;
-		foreach(string path in pathToCache) {
-			globalPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
-			if(!Directory.Exists(globalPath)) {
-				Directory.CreateDirectory(globalPath);
-			}
-		}
-		systemPath = globalPath;
+		this.systemPath = systemPath;
+		if(!Directory.Exists(systemPath))
+			Directory.CreateDirectory(systemPath);
 
 		foreach(string path in Directory.GetFiles(systemPath, "*.md", SearchOption.AllDirectories)) {
 			Blog blog = new(path);
 			blogsPath.Add(blog.Url, blog.ContentPath);
 		}
 
-		logger = blogCacheLogger;
-		cache = new Cache<Blog>(Program.CacheDuration, cacheLogger);
 	}
 
 	public async Task CacheBlogAsync(Blog blog, CancellationToken cancellationToken = default) {

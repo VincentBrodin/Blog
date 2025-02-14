@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BlogVb.Api {
 	public static class Program {
 		public static double CacheDuration { get; private set; } = 3600;
+		public static readonly string BlogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "blogs");
 		public static void Main(string[] args) {
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,7 @@ namespace BlogVb.Api {
 				ILogger<BlogCache> blogCacheLogger = sp.GetRequiredService<ILogger<BlogCache>>();
 				ILogger<Cache<Blog>> cacheLogger = sp.GetRequiredService<ILogger<Cache<Blog>>>();
 
-				return new BlogCache(blogCacheLogger, cacheLogger, ["blogs"]);
+				return new BlogCache(blogCacheLogger, cacheLogger, BlogDirectory);
 			});
 			builder.Services.AddSingleton<ICookieVault, CookieVault>();
 
