@@ -77,7 +77,6 @@ public class AccountController : ControllerBase {
 		// First check if the user already is logged in?
 		Account? cAccount = cookieVault.Get<Account>(HttpContext, "user");
 		if(cAccount != null) {
-			Console.WriteLine("Logged in");
 			string? cameFrom = cookieVault.Get<string>(HttpContext, "came-from");
 			if(cameFrom == null) {
 				Response.Headers.Append("HX-Redirect", "/");
@@ -119,7 +118,6 @@ public class AccountController : ControllerBase {
 	public async Task<IActionResult> GetCreate(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
 		Account? account = cookieVault.Get<Account>(HttpContext, "user");
 		if(account != null) {
-			Console.WriteLine("Logged in");
 			string? cameFrom = cookieVault.Get<string>(HttpContext, "came-from");
 			if(cameFrom == null) {
 				Response.Headers.Append("HX-Redirect", "/");

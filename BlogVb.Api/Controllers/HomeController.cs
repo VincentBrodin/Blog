@@ -25,7 +25,6 @@ public class HomeController : ControllerBase {
 		int end = start + MAX_BLOGS;
 
 		List<BlogForRendering> blogs = await blogCache.RangeBlogsForRenderingAsync(start, end);
-		Console.WriteLine(blogs.Count);
 
 		return Content(await layoutRenderer.RenderAsync("pages/home", new { title = "[vinbro]" }, new { blogs, page, next, prev }), Accepts.Html);
 	}

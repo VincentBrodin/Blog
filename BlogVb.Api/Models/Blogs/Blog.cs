@@ -60,7 +60,6 @@ public class Blog {
 		if(createBlog.Header != null) {
 			string imageName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
 			string imagePath = Path.Combine(Program.BlogDirectory, imageName);
-			Console.WriteLine(imagePath);
 
 			binding.HeaderName = imageName;
 
@@ -148,14 +147,14 @@ public class Blog {
 		(binding.ReadTimeMin, binding.ReadTimeSec) = Helper.CalculateReadTime(editBlog.Content);
 
 		if(editBlog.Header != null) {
-			string oldImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			string oldImagePath = Path.Combine(Program.BlogDirectory, binding.HeaderName);
 			if(File.Exists(oldImagePath)) {
 				File.Delete(oldImagePath);
 			}
 
 			binding.HeaderName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
 
-			string newImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", binding.HeaderName);
+			string newImagePath = Path.Combine(Program.BlogDirectory, binding.HeaderName);
 			await using Stream fileStream = new FileStream(newImagePath, FileMode.Create);
 			await editBlog.Header.CopyToAsync(fileStream, cancellationToken);
 		}
