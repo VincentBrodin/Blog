@@ -57,11 +57,11 @@ public class HomeController : ControllerBase {
 			return Content(await layoutRenderer.RenderErrorAsync(WebError.NotFound), Accepts.Html);
 		}
 		else {
-			cookieVault.Set(HttpContext, "came-from", $"/{blogUrl}");
+			cookieVault.Set(HttpContext, "came-from", $"/blog/{blogUrl}");
 			MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
 				.UseAutoIdentifiers()
 				.Build();
-			return Content(await layoutRenderer.RenderAsync("pages/blog", new { title = $"{blog.Name} - [vinbro]" }, new { content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
+			return Content(await layoutRenderer.RenderAsync("pages/blog", new { title = $"{blog.Name} - [vinbro]" }, new {blog = new BlogForRendering(blog), content = Markdown.ToHtml(blog.Content, pipeline) }), Accepts.Html);
 		}
 	}
 

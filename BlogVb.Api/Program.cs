@@ -18,7 +18,6 @@ namespace BlogVb.Api {
 			builder.Logging.AddConsole();
 
 			// Add services to the container.
-
 			builder.Services.AddControllers();
 			builder.Services.AddHttpContextAccessor();
 
