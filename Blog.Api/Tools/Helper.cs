@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.StaticFiles;
 using System.Dynamic;
+using System.Globalization;
 using System.Net.Mail;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Blog.Api.Tools;
@@ -42,11 +44,26 @@ public static class Helper {
 		return (readTimeMinutes, readTimeSeconds);
 	}
 
-	public static string MakeFileSafe(string input) {
-		foreach(char c in Path.GetInvalidFileNameChars()) {
-			input = input.Replace(c, '-');
+	public static string MakeSafe(string input) {
+		if(string.IsNullOrWhiteSpace(input))
+			return string.Empty;
+
+		string normalized = input.Normalize(NormalizationForm.FormD);
+		var sb = new StringBuilder();
+		foreach(char c in normalized) {
+			if(CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.NonSpacingMark)
+				sb.Append(c);
 		}
-		return input;
+		input = sb.ToString().Normalize(NormalizationForm.FormC);
+
+		foreach(char invalid in Path.GetInvalidFileNameChars()) {
+			input = input.Replace(invalid, '-');
+		}
+
+		input = Regex.Replace(input, @"[^a-zA-Z0-9\-\._~]", "-");
+		input = Regex.Replace(input, @"-+", "-");
+		input = input.Trim('-');
+		return input.ToLowerInvariant();
 	}
 
 	public static bool IsValidEmail(string email) {

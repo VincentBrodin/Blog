@@ -30,7 +30,7 @@ public class BlogModel {
 		ContentPath = contentPath;
 		MetaPath = contentPath + ".json";
 		string fileName = Path.GetFileNameWithoutExtension(ContentPath);
-		Url = HttpUtility.UrlEncode(Helper.MakeFileSafe(fileName));
+		Url = HttpUtility.UrlEncode(Helper.MakeSafe(fileName));
 	}
 
 
@@ -43,7 +43,7 @@ public class BlogModel {
 		if(!Directory.Exists(Program.BlogDirectory))
 			Directory.CreateDirectory(Program.BlogDirectory);
 
-		string safeName = Helper.MakeFileSafe(createBlog.Name);
+		string safeName = Helper.MakeSafe(createBlog.Name);
 		string contentName = safeName + ".md";
 		string contentPath = Path.Combine(Program.BlogDirectory, contentName);
 		string metaPath = contentPath + ".json";
@@ -58,7 +58,7 @@ public class BlogModel {
 
 		// Write image to disk and add section to meta
 		if(createBlog.Header != null) {
-			string imageName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
+			string imageName = Helper.MakeSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
 			string imagePath = Path.Combine(Program.BlogDirectory, imageName);
 
 			binding.HeaderName = imageName;
@@ -152,7 +152,7 @@ public class BlogModel {
 				File.Delete(oldImagePath);
 			}
 
-			binding.HeaderName = Helper.MakeFileSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
+			binding.HeaderName = Helper.MakeSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
 
 			string newImagePath = Path.Combine(Program.BlogDirectory, binding.HeaderName);
 			await using Stream fileStream = new FileStream(newImagePath, FileMode.Create);
