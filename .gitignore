@@ -16,7 +16,7 @@
 # Mono auto generated files
 mono_crash.*
 
-BlogVb.Api/package-lock.json
+Blog.Api/package-lock.json
 
 # Build results
 [Dd]ebug/
@@ -405,8 +405,8 @@ bower_components
 build/Release
 
 # Dependency directories
-BlogVb.Api/node_modules/
-BlogVb.Api/jspm_packages/
+Blog.Api/node_modules/
+Blog.Api/jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
