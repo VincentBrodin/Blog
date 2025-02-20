@@ -65,17 +65,6 @@ public class HomeController : ControllerBase {
 		}
 	}
 
-	[HttpGet]
-	[Route("blog/image/{fileName}")]
-	public IActionResult GetBlogImage(string fileName) {
-		string filePath = Path.Combine(Program.BlogDirectory, fileName);
-		if(!IO::File.Exists(filePath))
-			return NotFound();
-
-		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
-		return File(fileBytes, Helper.GetFileContentType(filePath));
-	}
-
 
 
 	[HttpGet]
@@ -89,6 +78,28 @@ public class HomeController : ControllerBase {
 	[Route("images/{fileName}")]
 	public IActionResult GetImage(string fileName) {
 		var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", fileName);
+		if(!IO::File.Exists(filePath))
+			return NotFound();
+
+		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
+		return File(fileBytes, Helper.GetFileContentType(filePath));
+	}
+
+	[HttpGet]
+	[Route("blog/image/{fileName}")]
+	public IActionResult GetBlogImage(string fileName) {
+		string filePath = Path.Combine(Program.BlogDirectory, fileName);
+		if(!IO::File.Exists(filePath))
+			return NotFound();
+
+		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
+		return File(fileBytes, Helper.GetFileContentType(filePath));
+	}
+
+	[HttpGet]
+	[Route("content/{fileName}")]
+	public IActionResult GetContentImage(string fileName) {
+		string filePath = Path.Combine(Program.ContentImageDirectory, fileName);
 		if(!IO::File.Exists(filePath))
 			return NotFound();
 

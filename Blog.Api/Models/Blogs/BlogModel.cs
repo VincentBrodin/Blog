@@ -58,7 +58,7 @@ public class BlogModel {
 
 		// Write image to disk and add section to meta
 		if(createBlog.Header != null) {
-			string imageName = Helper.MakeSafe(binding.Name) + Path.GetFileName(createBlog.Header.FileName);
+			string imageName = $"{Helper.MakeSafe(binding.Name)}_header_{Path.GetFileName(createBlog.Header.FileName)}";
 			string imagePath = Path.Combine(Program.BlogDirectory, imageName);
 
 			binding.HeaderName = imageName;
@@ -152,7 +152,7 @@ public class BlogModel {
 				File.Delete(oldImagePath);
 			}
 
-			binding.HeaderName = Helper.MakeSafe(binding.Name) + Path.GetFileName(editBlog.Header.FileName);
+			binding.HeaderName = $"{Helper.MakeSafe(binding.Name)}_header_{Path.GetFileName(editBlog.Header.FileName)}";
 
 			string newImagePath = Path.Combine(Program.BlogDirectory, binding.HeaderName);
 			await using Stream fileStream = new FileStream(newImagePath, FileMode.Create);

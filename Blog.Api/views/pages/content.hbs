@@ -1,0 +1,58 @@
+<div class="grow flex flex-col items-center" id="target">
+
+    <form method="post"
+          hx-post="/admin/content"
+          hx-trigger="submit"
+          hx-target="#target"
+          hx-swap="outerHTML"
+          hx-disabled-elt="#submit"
+          enctype="multipart/form-data"
+          class="container flex flex-row items-start gap-4 mb-4 p-8">
+        <div class="flex flex-col w-full">
+            <label for="name" class="font-semibold mb-2">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter image name" required class="input input-bordered w-full">
+        </div>
+
+        <div class="flex flex-col w-full">
+            <label for="content" class="font-semibold mb-2">Image:</label>
+            <input type="file" id="content" name="content" required class="file-input file-input-bordered w-full" />
+        </div>
+
+        <div class="flex flex-col justify-center h-full">
+            <label class="font-semibold mb-2 opacity-0">Center</label>
+            <button type="submit" id="submit" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 grid-cols-1 gap-6 mx-auto p-8">
+        {{#each images}}
+        <div class="card w-full bg-base-200 shadow-xl hover:shadow-2xl transition-all">
+            <figure>
+                <img src="/content/{{.}}" alt="{{.}}" loading="lazy" class="h-48 w-full object-cover">
+            </figure>
+            <div class="card-body">
+                <!-- Display the file name -->
+                <h2 class="card-title">{{.}}</h2>
+                <!-- Display the URL -->
+                <p class="text-sm text-gray-500">/content/{{.}}</p>
+                <div class="card-actions justify-end mt-4">
+                    <!-- Form for deleting the image -->
+                    <button type="submit"
+                            class="btn btn-error mr-5"
+                            hx-post="/admin/content/delete/{{.}}"
+                            hx-trigger="click"
+                            hx-target="#target"
+                            hx-swap="outerHTML"
+                            hx-disabled-elt="this">
+                        Delete
+                    </button>
+                    <a href="/content/{{.}}" class="btn btn-primary">View</a>
+                </div>
+            </div>
+        </div>
+        {{/each}}
+    </div>
+</div>
+
+<script src="/js/LoadingScreen.js"></script>
+<script src="/js/ForceSwap.js"></script>

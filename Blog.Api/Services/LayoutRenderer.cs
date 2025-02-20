@@ -11,6 +11,10 @@ public interface ILayoutRenderer {
 	string RenderError(WebError error);
 	Task<string> RenderErrorAsync(WebError error, CancellationToken cancellationToken = default);
 
+
+	string RenderErrorClean(WebError error);
+	Task<string> RenderErrorCleanAsync(WebError error, CancellationToken cancellationToken = default);
+
 }
 
 public class LayoutRenderer : ILayoutRenderer {
@@ -106,4 +110,23 @@ public class LayoutRenderer : ILayoutRenderer {
 
 		return layout(data);
 	}
+
+	public string RenderErrorClean(WebError error) {
+		return RenderErrorCleanAsync(error).GetAwaiter().GetResult();
+	}
+
+	public async Task<string> RenderErrorCleanAsync(WebError error, CancellationToken cancellationToken = default) {
+		var body = Handlebars.Compile(await viewCache.GetViewAsync(ErrorKey, cancellationToken));
+
+		HttpContext? httpContext = httpContextAccessor.HttpContext;
+		if(httpContext != null) {
+			httpContext.Response.StatusCode = (int)error;
+		}
+
+		return body(new {
+			code = (int)error,
+			message = Helper.GetErrorMessage(error),
+		});
+	}
+
 }

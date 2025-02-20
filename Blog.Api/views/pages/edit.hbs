@@ -5,16 +5,12 @@
             <label for="name" class="font-semibold mb-2">Title:</label>
             <input value="{{blog.name}}" type="text" id="name" name="name" placeholder="Enter Title" required class="input input-bordered w-full">
         </div>
-        <div class="flex flex-col w-full">
-            <label for="tags" class="font-semibold mb-2">Tags:</label>
-            <input type="text" id="tags" name="tags" placeholder="Enter Tags" class="input input-bordered w-full" />
-            <small class="text-gray-500 mt-2">Use commas to separate multiple tags.</small>
-        </div>
-
+     
         <div class="flex flex-col w-full">
             <label for="header" class="font-semibold mb-2">Header:</label>
             <input value="/images/{{blog.headerName}}" type="file" id="header" name="header" class="file-input file-input-bordered w-full" />
         </div>
+
         <div class="flex flex-col justify-center h-full">
             <label for="tags" class="font-semibold mb-2 opacity-0">Center</label>
             <button type="submit" class="btn btn-primary">Upload</button>
