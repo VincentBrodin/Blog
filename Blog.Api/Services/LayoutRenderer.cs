@@ -5,8 +5,12 @@ using HandlebarsDotNet;
 namespace Blog.Api.Services;
 
 public interface ILayoutRenderer {
-	string Render(string key, object? layoutData = default, object? bodyData = default);
-	Task<string> RenderAsync(string key, object? layoutData = default, object? bodyData = default, CancellationToken cancellationToken = default);
+	string Render(string key, dynamic? layoutData = default, dynamic? bodyData = default);
+	Task<string> RenderAsync(string key, dynamic? layoutData = default, dynamic? bodyData = default, CancellationToken cancellationToken = default);
+
+	string RenderClean(string key, dynamic? data = default);
+	Task<string> RenderCleanAsync(string key, dynamic? data = default, CancellationToken cancellationToken = default);
+
 
 	string RenderError(WebError error);
 	Task<string> RenderErrorAsync(WebError error, CancellationToken cancellationToken = default);
@@ -14,7 +18,6 @@ public interface ILayoutRenderer {
 
 	string RenderErrorClean(WebError error);
 	Task<string> RenderErrorCleanAsync(WebError error, CancellationToken cancellationToken = default);
-
 }
 
 public class LayoutRenderer : ILayoutRenderer {
@@ -30,7 +33,7 @@ public class LayoutRenderer : ILayoutRenderer {
 		this.httpContextAccessor = httpContextAccessor;
 	}
 
-	public string Render(string key, object? layoutData = default, object? bodyData = default) {
+	public string Render(string key, dynamic? layoutData = default, dynamic? bodyData = default) {
 		return RenderAsync(key, layoutData, bodyData).GetAwaiter().GetResult();
 	}
 
@@ -70,6 +73,24 @@ public class LayoutRenderer : ILayoutRenderer {
 		};
 
 		return layout(data);
+	}
+
+
+	public string RenderClean(string key, dynamic? data = default) {
+		return RenderCleanAsync(key, data).GetAwaiter().GetResult();
+	}
+
+	public async Task<string> RenderCleanAsync(string key, dynamic? data = default, CancellationToken cancellationToken = default) {
+		var body = Handlebars.Compile(await viewCache.GetViewAsync(key, cancellationToken));
+
+		HttpContext? httpContext = httpContextAccessor.HttpContext;
+		AccountModel? account = httpContext == null ? null : cookieVault.Get<AccountModel>(httpContext, "user");
+
+		// Convert bodyData to ExpandoObject if needed
+		var mergedBodyData = Helper.ToExpandoObject(data);
+		mergedBodyData.account = account; // Inject account into bodyData
+		data = mergedBodyData;
+		return body(data);
 	}
 
 	public string RenderError(WebError error) {

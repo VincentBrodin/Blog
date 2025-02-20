@@ -5,8 +5,6 @@ using Blog.Api.Services;
 using Blog.Api.Tools;
 using HandlebarsDotNet;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-
 using IO = System.IO;
 
 namespace Blog.Api.Controllers;
@@ -58,7 +56,6 @@ public class AdminController : ControllerBase {
 		return Redirect("/");
 	}
 	#endregion
-
 	#region Create
 	[HttpGet]
 	[Route("create")]
@@ -94,7 +91,6 @@ public class AdminController : ControllerBase {
 		return Redirect("/");
 	}
 	#endregion
-
 	#region Content
 	[HttpGet]
 	[Route("content")]
@@ -119,7 +115,7 @@ public class AdminController : ControllerBase {
 
 	[HttpPost]
 	[Route("content")]
-	public async Task<IActionResult> PostContentAsync(ILayoutRenderer layoutRenderer, IViewCache viewCache, ICookieVault cookieVault, [FromForm] AddImage addImage) {
+	public async Task<IActionResult> PostContentAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault, [FromForm] AddImage addImage) {
 		cookieVault.Set(HttpContext, "came-from", "/admin/content");
 		AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");
 		if(account == null || account.Role == 0) {
@@ -138,9 +134,7 @@ public class AdminController : ControllerBase {
 			}
 			string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
 			List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
-			string html = await viewCache.GetViewAsync("pages/content");
-			HandlebarsTemplate<object, object> layout = Handlebars.Compile(html);
-			return Content(layout(new { images }), Accepts.Html);
+			return Content(await layoutRenderer.RenderCleanAsync("pages/content", new { images }), Accepts.Html);
 		}
 		return Content(await layoutRenderer.RenderErrorCleanAsync(WebError.BadRequest), Accepts.Html);
 	}
@@ -164,13 +158,10 @@ public class AdminController : ControllerBase {
 			string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
 			List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
 			string html = await viewCache.GetViewAsync("pages/content");
-			HandlebarsTemplate<object, object> layout = Handlebars.Compile(html);
-			return Content(layout(new { images }), Accepts.Html);
+			return Content(await layoutRenderer.RenderCleanAsync("pages/content", new { images }), Accepts.Html);
 		}
 
 		return Content(await layoutRenderer.RenderErrorCleanAsync(WebError.BadRequest), Accepts.Html);
 	}
-
-
 	#endregion
 }

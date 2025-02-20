@@ -10,6 +10,7 @@ namespace Blog.Api {
 		public static double CacheDuration { get; private set; } = 3600;
 		public static readonly string BlogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "blogs");
 		public static readonly string ContentImageDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "images");
+
 		public static void Main(string[] args) {
 			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +61,6 @@ namespace Blog.Api {
 			WebApplication app = builder.Build();
 
 			// Configure the HTTP request pipeline.
-
 			app.UseAuthorization();
 			app.MapControllers();
 			app.UseStaticFiles();

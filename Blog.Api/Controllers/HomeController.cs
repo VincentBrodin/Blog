@@ -31,7 +31,7 @@ public class HomeController : ControllerBase {
 
 	[HttpPost]
 	[Route("")]
-	public async Task<IActionResult> PostAsync(IViewCache viewCache, IBlogCache blogCache, ICookieVault cookieVault, [FromQuery] int page = 1) {
+	public async Task<IActionResult> PostAsync(ILayoutRenderer layoutRenderer, IViewCache viewCache, IBlogCache blogCache, ICookieVault cookieVault, [FromQuery] int page = 1) {
 		int next = page + 1;
 		int prev = page == 1 ? 1 : page - 1;
 
@@ -40,12 +40,12 @@ public class HomeController : ControllerBase {
 
 		List<BlogForRendering> blogs = await blogCache.RangeBlogsForRenderingAsync(start, end);
 
-		string html = await viewCache.GetViewAsync("pages/home");
-		HandlebarsTemplate<object, object> layout = Handlebars.Compile(html);
+		/*string html = await viewCache.GetViewAsync("pages/home");*/
+		/*HandlebarsTemplate<object, object> layout = Handlebars.Compile(html);*/
+		/*AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");*/
+		/*return Content(layout(new { blogs, page, next, prev, account }), Accepts.Html);*/
 
-		AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");
-
-		return Content(layout(new { blogs, page, next, prev, account }), Accepts.Html);
+		return Content(await layoutRenderer.RenderCleanAsync("pages/home", new {blogs, page, next, prev}), Accepts.Html);
 	}
 
 
