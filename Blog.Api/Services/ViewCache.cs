@@ -33,8 +33,7 @@ public class ViewCache : IViewCache, IAsyncDisposable {
 	}
 
 	public async Task<string> GetViewAsync(string key, CancellationToken cancellationToken = default) {
-		string? value = cache.Get(key);
-		return value ?? await CacheViewAsync(key, cancellationToken);
+		return cache.Get(key) ?? await CacheViewAsync(key, cancellationToken);
 	}
 
 	private string CacheView(string key) {

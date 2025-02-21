@@ -53,6 +53,11 @@ namespace Blog.Api {
 
 				return new BlogCache(blogCacheLogger, cacheLogger, BlogDirectory);
 			});
+			builder.Services.AddSingleton<IImageCache>(sp => {
+				ILogger<ImageCache> imageCacheLogger = sp.GetRequiredService<ILogger<ImageCache>>();
+				ILogger<Cache<byte[]>> cacheLogger = sp.GetRequiredService<ILogger<Cache<byte[]>>>();
+				return new ImageCache(imageCacheLogger, cacheLogger);
+			});
 			builder.Services.AddSingleton<ICookieVault, CookieVault>();
 
 			builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();

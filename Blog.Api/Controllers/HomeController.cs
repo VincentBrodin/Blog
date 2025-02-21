@@ -1,8 +1,6 @@
-﻿using Blog.Api.Models.Accounts;
-using Blog.Api.Models.Blogs;
+﻿using Blog.Api.Models.Blogs;
 using Blog.Api.Services;
 using Blog.Api.Tools;
-using HandlebarsDotNet;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 using IO = System.IO;
@@ -44,8 +42,7 @@ public class HomeController : ControllerBase {
 		/*HandlebarsTemplate<object, object> layout = Handlebars.Compile(html);*/
 		/*AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");*/
 		/*return Content(layout(new { blogs, page, next, prev, account }), Accepts.Html);*/
-
-		return Content(await layoutRenderer.RenderCleanAsync("pages/home", new {blogs, page, next, prev}), Accepts.Html);
+		return Content(await layoutRenderer.RenderCleanAsync("pages/home", new { blogs, page, next, prev }), Accepts.Html);
 	}
 
 
@@ -76,34 +73,35 @@ public class HomeController : ControllerBase {
 
 	[HttpGet]
 	[Route("images/{fileName}")]
-	public IActionResult GetImage(string fileName) {
+	public async Task<IActionResult> GetImage(IImageCache imageCache, string fileName) {
 		var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot", "images", fileName);
-		if(!IO::File.Exists(filePath))
+		byte[]? image = await imageCache.GetImageAsync(filePath);
+		if(image == null) {
 			return NotFound();
+		}
+		return File(image, Helper.GetFileContentType(filePath));
 
-		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
-		return File(fileBytes, Helper.GetFileContentType(filePath));
 	}
 
 	[HttpGet]
 	[Route("blog/image/{fileName}")]
-	public IActionResult GetBlogImage(string fileName) {
+	public async Task<IActionResult> GetBlogImage(IImageCache imageCache, string fileName) {
 		string filePath = Path.Combine(Program.BlogDirectory, fileName);
-		if(!IO::File.Exists(filePath))
+		byte[]? image = await imageCache.GetImageAsync(filePath);
+		if(image == null) {
 			return NotFound();
-
-		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
-		return File(fileBytes, Helper.GetFileContentType(filePath));
+		}
+		return File(image, Helper.GetFileContentType(filePath));
 	}
 
 	[HttpGet]
 	[Route("content/{fileName}")]
-	public IActionResult GetContentImage(string fileName) {
+	public async Task<IActionResult> GetContentImage(IImageCache imageCache, string fileName) {
 		string filePath = Path.Combine(Program.ContentImageDirectory, fileName);
-		if(!IO::File.Exists(filePath))
+		byte[]? image = await imageCache.GetImageAsync(filePath);
+		if(image == null) {
 			return NotFound();
-
-		byte[] fileBytes = IO::File.ReadAllBytes(filePath);
-		return File(fileBytes, Helper.GetFileContentType(filePath));
+		}
+		return File(image, Helper.GetFileContentType(filePath));
 	}
 }
