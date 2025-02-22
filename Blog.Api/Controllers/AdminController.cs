@@ -141,7 +141,7 @@ public class AdminController : ControllerBase {
 
 	[HttpPost]
 	[Route("content/delete/{imageName}")]
-	public async Task<IActionResult> PostContentAsync(ILayoutRenderer layoutRenderer, IViewCache viewCache, ICookieVault cookieVault, [FromRoute] string imageName) {
+	public async Task<IActionResult> PostContentAsync(ILayoutRenderer layoutRenderer, IImageCache imageCache, ICookieVault cookieVault, [FromRoute] string imageName) {
 		cookieVault.Set(HttpContext, "came-from", "/admin/content");
 		AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");
 		if(account == null || account.Role == 0) {
@@ -149,15 +149,14 @@ public class AdminController : ControllerBase {
 		}
 
 		string imagePath = Path.Combine(Program.ContentImageDirectory, imageName);
+		imageCache.RemoveImage(imagePath);
 		if(IO::File.Exists(imagePath)) {
 			IO::File.Delete(imagePath);
-
 			if(!Directory.Exists(Program.ContentImageDirectory)) {
 				Directory.CreateDirectory(Program.ContentImageDirectory);
 			}
 			string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
 			List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
-			string html = await viewCache.GetViewAsync("pages/content");
 			return Content(await layoutRenderer.RenderCleanAsync("pages/content", new { images }), Accepts.Html);
 		}
 

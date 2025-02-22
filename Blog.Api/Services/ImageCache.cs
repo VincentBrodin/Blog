@@ -5,6 +5,8 @@ namespace Blog.Api.Services;
 public interface IImageCache {
 	byte[]? GetImage(string path);
 	Task<byte[]?> GetImageAsync(string path, CancellationToken cancellationToken = default);
+
+	void RemoveImage(string path);
 }
 
 public class ImageCache : IImageCache, IAsyncDisposable {
@@ -24,11 +26,15 @@ public class ImageCache : IImageCache, IAsyncDisposable {
 		return cache.Get(path) ?? await CacheImageAsync(path);
 	}
 
+	public void RemoveImage(string path){
+		_ = cache.Remove(path);
+	}
+
 	private async Task<byte[]?> CacheImageAsync(string path, CancellationToken cancellationToken = default) {
 		DateTime start = DateTime.Now;
 
 		if(!File.Exists(path)) {
-			logger.LogError($"Could not find any file @ {path}");
+			logger.LogWarning($"Could not find any file @ {path}");
 			return null;
 		}
 
