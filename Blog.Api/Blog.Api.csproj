@@ -46,9 +46,9 @@
 		</Content>
 	</ItemGroup>
 
-	<Target Name="Tailwind" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Debug'">
-		<Exec Command="npm run css:build" />
-	</Target>
+	<!--<Target Name="Tailwind" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild" Condition="'$(Configuration)' == 'Debug'">-->
+	<!--	<Exec Command="npm run css:build" />-->
+	<!--</Target>-->
 
 
 </Project>
