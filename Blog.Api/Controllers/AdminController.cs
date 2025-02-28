@@ -110,7 +110,7 @@ public class AdminController : ControllerBase {
 			Directory.CreateDirectory(Program.ContentImageDirectory);
 		}
 		string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
-		List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
+		List<ImageForRendering> images = [.. rawImagePaths.Select(p => new ImageForRendering(p))];
 		return Content(await layoutRenderer.RenderAsync("pages/content", new { account, title = "Content - [vinbro]" }, new { images }), Accepts.Html);
 	}
 
@@ -134,7 +134,7 @@ public class AdminController : ControllerBase {
 				Directory.CreateDirectory(Program.ContentImageDirectory);
 			}
 			string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
-			List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
+			List<ImageForRendering> images = [.. rawImagePaths.Select(p => new ImageForRendering(p))];
 			return Content(await layoutRenderer.RenderCleanAsync("pages/content", new { images }), Accepts.Html);
 		}
 		return Content(await layoutRenderer.RenderErrorCleanAsync(WebError.BadRequest), Accepts.Html);
@@ -157,7 +157,7 @@ public class AdminController : ControllerBase {
 				Directory.CreateDirectory(Program.ContentImageDirectory);
 			}
 			string[] rawImagePaths = Directory.GetFiles(Program.ContentImageDirectory);
-			List<string> images = [.. rawImagePaths.Select(p => Path.GetFileName(p))];
+			List<ImageForRendering> images = [.. rawImagePaths.Select(p => new ImageForRendering(p))];
 			return Content(await layoutRenderer.RenderCleanAsync("pages/content", new { images }), Accepts.Html);
 		}
 

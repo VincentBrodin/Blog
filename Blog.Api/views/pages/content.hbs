@@ -25,20 +25,21 @@
 		{{#each images}}
 		<div class="card w-full bg-base-200 shadow-xl hover:shadow-2xl transition-all">
 			<figure>
-				<img src="/content/{{.}}" alt="{{.}}" loading="lazy" class="h-48 w-full object-cover">
+				<img src="{{.webPath}}" alt="{{.name}}" loading="lazy" class="h-48 w-full object-cover">
 			</figure>
 			<div class="card-body">
 				<!-- Display the file name -->
-				<h2 class="card-title">{{.}}</h2>
+				<h2 class="card-title">{{.name}}</h2>
 				<!-- Display the URL -->
-				<p class="text-sm text-gray-500">/content/{{.}}</p>
+				<p class="text-sm text-gray-500">{{.webPath}}</p>
+				<p class="text-sm text-gray-500">{{.size}}</p>
 				<div class="card-actions justify-end mt-4">
 					<!-- Form for deleting the image -->
-					<button type="submit" class="btn btn-error mr-5" hx-post="/admin/content/delete/{{.}}"
+					<button type="submit" class="btn btn-error mr-5" hx-post="/admin/content/delete/{{.fullName}}"
 						hx-trigger="click" hx-target="#target" hx-swap="outerHTML" hx-disabled-elt="this">
 						Delete
 					</button>
-					<a href="/content/{{.}}" class="btn btn-primary">View</a>
+					<a href="{{.webPath}}" class="btn btn-primary">View</a>
 				</div>
 			</div>
 		</div>

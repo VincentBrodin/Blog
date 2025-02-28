@@ -1,9 +1,9 @@
-﻿using Microsoft.AspNetCore.StaticFiles;
-using System.Dynamic;
+﻿using System.Dynamic;
 using System.Globalization;
 using System.Net.Mail;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace Blog.Api.Tools;
 
@@ -38,7 +38,6 @@ public static class Helper {
 
 		int characterCount = markdown.Length;
 		double wordCount = characterCount / 5.1; // Avrage word length in english
-
 		int readTimeMinutes = (int)Math.Floor(wordCount / 200);
 		int readTimeSeconds = (int)Math.Round(wordCount % 200 * 60 / 200);
 
@@ -125,4 +124,19 @@ public static class Helper {
 		return dictionary as ExpandoObject;
 	}
 
+	public static string FormatBytes(string path) {
+		return FormatBytes(new FileInfo(path).Length);
+	}
+
+	public static string FormatBytes(long length) {
+		string[] suffixes = { "B", "KB", "MB", "GB", "TB", "PB", "EB" };
+		int suffixIndex = 0;
+		double readableSize = length;
+
+		while(readableSize >= 1024 && suffixIndex < suffixes.Length - 1) {
+			readableSize /= 1024;
+			suffixIndex++;
+		}
+		return $"{readableSize:F2} {suffixes[suffixIndex]}";
+	}
 }
