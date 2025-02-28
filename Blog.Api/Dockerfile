@@ -14,11 +14,11 @@ COPY ["Blog.Api/Blog.Api.csproj", "Blog.Api/"]
 RUN dotnet restore "./Blog.Api/Blog.Api.csproj"
 COPY . .
 WORKDIR "/src/Blog.Api"
-RUN dotnet build "./Blog.Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Blog.Api.csproj" -c Release -o /app/build
 
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Blog.Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Blog.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app
