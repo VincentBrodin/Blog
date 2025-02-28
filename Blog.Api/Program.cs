@@ -5,87 +5,87 @@ using HandlebarsDotNet;
 using Microsoft.EntityFrameworkCore;
 
 
-namespace Blog.Api {
-	public static class Program {
-		public static double CacheDuration { get; private set; } = 3600;
-		public static readonly string BlogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "blogs");
-		public static readonly string ContentImageDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "images");
+namespace Blog.Api;
 
-		public static void Main(string[] args) {
-			WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+public static class Program {
+	public static double CacheDuration { get; private set; } = 3600;
+	public static readonly string BlogDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "blogs");
+	public static readonly string ContentImageDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "images");
 
-			CacheDuration = double.Parse(builder.Configuration["CacheDuration"]!);
+	public static void Main(string[] args) {
+		WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-			builder.Logging.ClearProviders();
-			builder.Logging.AddConsole();
+		CacheDuration = double.Parse(builder.Configuration["CacheDuration"]!);
 
-			// Add services to the container.
-			builder.Services.AddControllers();
-			builder.Services.AddHttpContextAccessor();
+		builder.Logging.ClearProviders();
+		builder.Logging.AddConsole();
 
-			Console.WriteLine(builder.Configuration["ConnectionStrings:SQLiteDefualt"]);
-			builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration["ConnectionStrings:SQLiteDefualt"]));
+		// Add services to the container.
+		builder.Services.AddControllers();
+		builder.Services.AddHttpContextAccessor();
 
-			builder.Services.AddSingleton<IViewCache>(sp => {
-				ILogger<ViewCache> viewCacheLogger = sp.GetRequiredService<ILogger<ViewCache>>();
-				ILogger<Cache<string>> cacheLogger = sp.GetRequiredService<ILogger<Cache<string>>>();
+		Console.WriteLine(builder.Configuration["ConnectionStrings:SQLiteDefualt"]);
+		builder.Services.AddDbContext<AppDbContext>(options => options.UseSqlite(builder.Configuration["ConnectionStrings:SQLiteDefualt"]));
 
-				ViewCache viewCache = new(viewCacheLogger, cacheLogger, ["views"]);
+		builder.Services.AddSingleton<IViewCache>(sp => {
+			ILogger<ViewCache> viewCacheLogger = sp.GetRequiredService<ILogger<ViewCache>>();
+			ILogger<Cache<string>> cacheLogger = sp.GetRequiredService<ILogger<Cache<string>>>();
+
+			ViewCache viewCache = new(viewCacheLogger, cacheLogger, ["views"]);
 
 
-				Handlebars.RegisterHelper("role", (writer, options, context, arguments) => {
-					if(arguments.Length == 1 && arguments[0] is AccountModel.Roles role) {
-						if((int)role >= 1) {
-							options.Template(writer, context);
-						}
+			Handlebars.RegisterHelper("role", (writer, options, context, arguments) => {
+				if(arguments.Length == 1 && arguments[0] is AccountModel.Roles role) {
+					if((int)role >= 1) {
+						options.Template(writer, context);
 					}
-				});
-
-				Handlebars.RegisterTemplate("forecast", viewCache.GetView("components/forecast"));
-				Handlebars.RegisterTemplate("nav", viewCache.GetView("components/nav"));
-				Handlebars.RegisterTemplate("footer", viewCache.GetView("components/footer"));
-				Handlebars.RegisterTemplate("blog", viewCache.GetView("components/blog"));
-				return viewCache;
+				}
 			});
-			builder.Services.AddSingleton<IBlogCache>(sp => {
-				ILogger<BlogCache> blogCacheLogger = sp.GetRequiredService<ILogger<BlogCache>>();
-				ILogger<Cache<Models.Blogs.BlogModel>> cacheLogger = sp.GetRequiredService<ILogger<Cache<Models.Blogs.BlogModel>>>();
 
-				return new BlogCache(blogCacheLogger, cacheLogger, BlogDirectory);
-			});
-			builder.Services.AddSingleton<IImageCache>(sp => {
-				ILogger<ImageCache> imageCacheLogger = sp.GetRequiredService<ILogger<ImageCache>>();
-				ILogger<Cache<byte[]>> cacheLogger = sp.GetRequiredService<ILogger<Cache<byte[]>>>();
-				return new ImageCache(imageCacheLogger, cacheLogger);
-			});
-			builder.Services.AddSingleton<ICookieVault, CookieVault>();
+			Handlebars.RegisterTemplate("forecast", viewCache.GetView("components/forecast"));
+			Handlebars.RegisterTemplate("nav", viewCache.GetView("components/nav"));
+			Handlebars.RegisterTemplate("footer", viewCache.GetView("components/footer"));
+			Handlebars.RegisterTemplate("blog", viewCache.GetView("components/blog"));
+			return viewCache;
+		});
+		builder.Services.AddSingleton<IBlogCache>(sp => {
+			ILogger<BlogCache> blogCacheLogger = sp.GetRequiredService<ILogger<BlogCache>>();
+			ILogger<Cache<Models.Blogs.BlogModel>> cacheLogger = sp.GetRequiredService<ILogger<Cache<Models.Blogs.BlogModel>>>();
 
-			builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();
-			builder.Services.AddScoped<IAccountService, AccountService>();
+			return new BlogCache(blogCacheLogger, cacheLogger, BlogDirectory);
+		});
+		builder.Services.AddSingleton<IImageCache>(sp => {
+			ILogger<ImageCache> imageCacheLogger = sp.GetRequiredService<ILogger<ImageCache>>();
+			ILogger<Cache<byte[]>> cacheLogger = sp.GetRequiredService<ILogger<Cache<byte[]>>>();
+			return new ImageCache(imageCacheLogger, cacheLogger);
+		});
+		builder.Services.AddSingleton<ICookieVault, CookieVault>();
 
-			WebApplication app = builder.Build();
+		builder.Services.AddScoped<ILayoutRenderer, LayoutRenderer>();
+		builder.Services.AddScoped<IAccountService, AccountService>();
 
-			// Configure the HTTP request pipeline.
-			app.UseAuthorization();
-			app.MapControllers();
-			app.UseStaticFiles();
-			app.MapStaticAssets();
+		WebApplication app = builder.Build();
 
-			app.Run();
-		}
+		// Configure the HTTP request pipeline.
+		app.UseAuthorization();
+		app.MapControllers();
+		app.UseStaticFiles();
+		app.MapStaticAssets();
+
+		app.Run();
+	}
+}
+
+public static class Accepts {
+	public const string Html = "text/html";
+	public const string Json = "application/json";
+	public static bool IsHtml(string? accepts) {
+		if(accepts == null) return false; // Defualts back to json
+		return accepts == Html;
 	}
 
-	public static class Accepts {
-		public const string Html = "text/html";
-		public const string Json = "application/json";
-		public static bool IsHtml(string? accepts) {
-			if(accepts == null) return false; // Defualts back to json
-			return accepts == Html;
-		}
-
-		public static bool IsJson(string? accepts) {
-			if(accepts == null) return true; // Defaults back to json
-			return accepts == Json;
-		}
+	public static bool IsJson(string? accepts) {
+		if(accepts == null) return true; // Defaults back to json
+		return accepts == Json;
 	}
 }

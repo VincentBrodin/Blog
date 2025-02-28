@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Blog.Api.Tools;
+
 public enum WebError {
 	BadRequest = 400,
 	Unauthorized = 401,

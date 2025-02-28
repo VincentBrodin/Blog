@@ -5,6 +5,7 @@ using HandlebarsDotNet;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Blog.Api.Controllers;
+
 [Route("[controller]")]
 [ApiController]
 public class AccountController : ControllerBase {

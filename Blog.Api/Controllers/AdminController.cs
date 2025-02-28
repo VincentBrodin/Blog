@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using IO = System.IO;
 
 namespace Blog.Api.Controllers;
+
 [ApiController]
 [Route("[controller]")]
 public class AdminController : ControllerBase {

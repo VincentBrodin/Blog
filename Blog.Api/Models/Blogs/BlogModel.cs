@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Web;
 
 namespace Blog.Api.Models.Blogs;
+
 public class BlogModel {
 	public string Name { get; set; } = string.Empty;
 	public string Url { get; } = string.Empty;
