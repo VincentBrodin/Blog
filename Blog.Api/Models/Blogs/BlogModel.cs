@@ -1,6 +1,6 @@
-﻿using Blog.Api.Tools;
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Web;
+using Blog.Api.Tools;
 
 namespace Blog.Api.Models.Blogs;
 
@@ -33,8 +33,6 @@ public class BlogModel {
 		string fileName = Path.GetFileNameWithoutExtension(ContentPath);
 		Url = HttpUtility.UrlEncode(Helper.MakeSafe(fileName));
 	}
-
-
 	#region Generate New Blog
 	public static BlogModel GenerateNewBlog(CreateBlog createBlog) {
 		return GenerateNewBlogAsync(createBlog).GetAwaiter().GetResult();
@@ -77,7 +75,6 @@ public class BlogModel {
 		return blog;
 	}
 	#endregion
-
 	#region Load
 	public void LoadContent() {
 		LoadContentAsync().GetAwaiter().GetResult();
@@ -129,9 +126,7 @@ public class BlogModel {
 		HasMeta = true;
 		return true;
 	}
-
 	#endregion
-
 	public async Task UpdateAsync(EditBlog editBlog, CancellationToken cancellationToken = default) {
 		await File.WriteAllTextAsync(ContentPath, editBlog.Content, cancellationToken);
 
@@ -173,5 +168,20 @@ public class BlogModel {
 
 		IsLoaded = true;
 		HasMeta = true;
+	}
+
+	public void Delete() {
+		if(File.Exists(ContentPath)) {
+			File.Delete(ContentPath);
+		}
+
+		if(File.Exists(MetaPath)) {
+			File.Delete(MetaPath);
+		}
+
+		string headerPath = Path.Combine(Program.BlogDirectory, HeaderName);
+		if(File.Exists(headerPath)){
+			File.Delete(headerPath);
+		}
 	}
 }

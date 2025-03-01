@@ -56,6 +56,37 @@ public class AdminController : ControllerBase {
 		Response.Headers.Append("HX-Redirect", "/");
 		return Redirect("/");
 	}
+
+	[HttpPost]
+	[Route("delete/{blogUrl}")]
+	public async Task<IActionResult> PostDeleteAsync(IBlogCache blogCache, IImageCache imageCache, ICookieVault cookieVault, [FromForm] DeleteBlog deleteBlog, string blogUrl) {
+		Console.WriteLine("Starting delete");
+		AccountModel? account = cookieVault.Get<AccountModel>(HttpContext, "user");
+		if(account == null) {
+			Response.Headers.Append("HX-Redirect", "/account/login");
+			return Unauthorized();
+		}
+		else if(account.Role == 0) {
+			return Unauthorized();
+		}
+
+		BlogModel? blog = await blogCache.GetBlogAsync(blogUrl);
+		if(blog == null) {
+			return NotFound();
+		}
+		else if(blog.Name != deleteBlog.Confirm) {
+			return BadRequest();
+		}
+		// Removes from cache
+		string headerPath = Path.Combine(Program.BlogDirectory, blog.HeaderName);
+		imageCache.RemoveImage(headerPath);
+		blogCache.Delete(blog);
+		// Delete all files
+		blog.Delete();
+
+		Response.Headers.Append("HX-Redirect", "/");
+		return Redirect("/");
+	}
 	#endregion
 	#region Create
 	[HttpGet]

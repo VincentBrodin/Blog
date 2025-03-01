@@ -10,6 +10,7 @@ public interface IBlogCache {
 	Task<List<BlogForRendering>> GetAllBlogsForRenderingAsync(CancellationToken cancellationToken = default);
 	Task<List<BlogForRendering>> RangeBlogsForRenderingAsync(int start, int end, CancellationToken cancellationToken = default);
 	Task CacheBlogAsync(BlogModel blog, CancellationToken cancellationToken = default);
+	void Delete(BlogModel blog);
 
 }
 
@@ -88,7 +89,6 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 	}
 
 	public async Task<BlogModel?> GetBlogAsync(string url, bool load = false, CancellationToken cancellationToken = default) {
-
 		BlogModel? blog = cache.Get(url);
 		// We have not cached
 		if(blog == null) {
@@ -121,6 +121,13 @@ public class BlogCache : IBlogCache, IAsyncDisposable {
 		}
 		return blog;
 
+	}
+
+	public void Delete(BlogModel blog) {
+		logger.LogInformation($"Deleting {blog.Name} from cache");
+		cache.Remove(blog.Url);
+		blogsPath.Remove(blog.Url);
+		blog.Delete();
 	}
 
 	public async ValueTask DisposeAsync() {

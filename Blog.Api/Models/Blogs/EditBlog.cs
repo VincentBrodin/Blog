@@ -8,12 +8,15 @@ public class EditBlog {
 
 	public EditBlog(BlogModel blog) {
 		Name = blog.Name;
+		Url = blog.Url;
 		Description = blog.Description;
 		Content = blog.Content;
 	}
 
 	[JsonPropertyName("name")]
 	public string Name { get; set; } = string.Empty;
+	[JsonPropertyName("url")]
+	public string Url { get; set; } = string.Empty;
 	[JsonPropertyName("description")]
 	public string Description { get; set; } = string.Empty;
 

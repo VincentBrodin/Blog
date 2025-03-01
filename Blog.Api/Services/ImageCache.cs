@@ -27,6 +27,7 @@ public class ImageCache : IImageCache, IAsyncDisposable {
 	}
 
 	public void RemoveImage(string path){
+		logger.LogInformation($"Removing {path} form cache");
 		_ = cache.Remove(path);
 	}
 

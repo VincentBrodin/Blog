@@ -61,15 +61,6 @@ public class HomeController : ControllerBase {
 		}
 	}
 
-
-
-	[HttpGet]
-	[Route("about")]
-	public async Task<IActionResult> GetAboutAsync(ILayoutRenderer layoutRenderer, ICookieVault cookieVault) {
-		cookieVault.Set(HttpContext, "came-from", "/about");
-		return Content(await layoutRenderer.RenderAsync("pages/about"), Accepts.Html);
-	}
-
 	[HttpGet]
 	[Route("images/{fileName}")]
 	public async Task<IActionResult> GetImage(IImageCache imageCache, string fileName) {
