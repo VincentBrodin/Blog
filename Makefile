@@ -8,7 +8,7 @@ stop:
 deploy: ## Stops, removes and creates container.
 	make stop
 	-docker rm blog
-	docker run -d -p 5068:8080 -p 5069:8081 --volume blogs:/app/data --name blog vincentbrodin/blogapi:latest
+	docker run -d -p 5050:5051 -p 5051:5051 --volume blogs:/app/data --name blog vincentbrodin/blogapi:latest
 
 up: ## Builds and deploys docker container.
 	make build
@@ -20,12 +20,12 @@ push: ## Pushes image to docker hub
 
 debug: ## Runs project in debug mode and HTTP.
 	make tailwind 
-	-dotnet run --project Blog.Api -c Debug --start-profile "HTTP"
+	-dotnet run --project Blog.Api -c Debug --start-profile "https"
 
 
 release: ## Runs project in release mode and HTTP.
 	make tailwind 
-	-dotnet run --project Blog.Api -c Release --start-profile "HTTP"
+	-dotnet run --project Blog.Api -c Release --start-profile "https"
 
 tailwind: ## Builds tailwind
 	-npm --prefix ./Blog.Api  run css:build

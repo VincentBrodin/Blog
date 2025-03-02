@@ -2,8 +2,8 @@ FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 #USER $APP_UID
 USER root
 WORKDIR /app
-EXPOSE 8080
-EXPOSE 8081
+EXPOSE 5050 
+EXPOSE 5051 
 
 #VOLUME /app/data
 
