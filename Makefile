@@ -8,7 +8,7 @@ stop:
 deploy: ## Stops, removes and creates container.
 	make stop
 	-docker rm blog
-	docker run -d -p 5050:5051 -p 5051:5051 --volume blogs:/app/data --name blog vincentbrodin/blogapi:latest
+	docker run -d -p 5050:8080 -p 5051:8081 --volume blogs:/app/data --name blog vincentbrodin/blogapi:latest
 
 up: ## Builds and deploys docker container.
 	make build
