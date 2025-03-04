@@ -87,7 +87,7 @@ public class AccountController : ControllerBase {
 		}
 
 		AccountModel? account = await accountService.GetByEmail(loginAccount.Email);
-		if(account == null || account.Password != loginAccount.Password) {
+		if(account == null || Security.CheckPassword(loginAccount.Password, account.Password)) {
 			string renderedHtml = Handlebars.Compile(await viewCache.GetViewAsync("pages/login"))(new {
 				email = loginAccount.Email,
 				password = loginAccount.Password,

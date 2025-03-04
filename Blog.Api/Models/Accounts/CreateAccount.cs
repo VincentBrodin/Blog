@@ -21,7 +21,7 @@ public class CreateAccount {
 			Id = Guid.NewGuid(),
 			Username = Username,
 			Email = Email,
-			Password = Password
+			Password = Security.HashPassword(Password),
 		};
 	}
 

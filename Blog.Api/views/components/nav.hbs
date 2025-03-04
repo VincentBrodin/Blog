@@ -4,9 +4,9 @@
     </div>
     <div class="flex-none gap-2">
         <label class="swap swap-rotate">
-            <input id="dark-mode" type="checkbox" />
-            <i class="bi bi-sun swap-on text-xl"></i>
-            <i class="bi bi-moon-stars swap-off text-xl"></i>
+            <input id="dark-mode" type="checkbox" checked />
+            <i class="bi bi-sun swap-off text-xl"></i>
+            <i class="bi bi-moon-stars swap-on text-xl"></i>
         </label>
 
         {{#if account}}
@@ -40,7 +40,7 @@
         const savedTheme = localStorage.getItem("theme");
         if (savedTheme) {
             html.setAttribute("data-theme", savedTheme);
-            darkMode.checked = savedTheme === "light";
+            darkMode.checked = savedTheme === "retro";
         }
 
         darkMode.addEventListener("input", () => {
