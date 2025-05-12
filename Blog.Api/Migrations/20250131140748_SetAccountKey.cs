@@ -2,17 +2,21 @@
 
 #nullable disable
 
-namespace BlogVb.Api.Migrations {
-	/// <inheritdoc />
-	public partial class SetAccountKey : Migration {
-		/// <inheritdoc />
-		protected override void Up(MigrationBuilder migrationBuilder) {
+namespace BlogVb.Api.Migrations
+{
+    /// <inheritdoc />
+    public partial class SetAccountKey : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
 
-		}
+        }
 
-		/// <inheritdoc />
-		protected override void Down(MigrationBuilder migrationBuilder) {
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
 
-		}
-	}
+        }
+    }
 }
